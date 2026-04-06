@@ -1,7 +1,7 @@
-package com.example.localmarketplace.presentation.screens
+package com.example.localmarketplace.presentation.listing
 
-import android.R.attr.category
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -19,10 +19,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,19 +34,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.localmarketplace.presentation.ListingViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.localmarketplace.presentation.components.CategoryDropDown
 
 @Composable
-fun CreateListingScreen(
+fun ListingScreen(
     navController: NavController,
-    viewModel: ListingViewModel = hiltViewModel()
+    listingViewModel: ListingViewModel = hiltViewModel()
 ) {
 
     var title by remember { mutableStateOf("") }
@@ -58,7 +60,19 @@ fun CreateListingScreen(
     ) { uri: Uri? ->
         imageUri = uri
     }
+    val context = LocalContext.current
+
+    val uiState by listingViewModel.uiState.collectAsState()
+    val isLoading = uiState is ListingUiState.Loading
+
     val imagePath = imageUri.toString()
+
+    LaunchedEffect(uiState) {
+        if (uiState is ListingUiState.Success) {
+            navController.navigate("home_listing")
+            listingViewModel.resetState()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -81,13 +95,12 @@ fun CreateListingScreen(
                 verticalAlignment = Alignment.Top
             ) {
                 Text(
-                    "Add Product",
-                    fontSize = 50.sp,
-                    color = Color.Black,
-                    style = MaterialTheme.typography.headlineSmall
+                    text = "Add Product",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Preview image
             imageUri?.let { uri ->
@@ -98,13 +111,15 @@ fun CreateListingScreen(
                     modifier = Modifier.size(200.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = { launcher.launch("image/*") },
             ) {
                 Text(text = "Choose Image")
             }
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
@@ -112,8 +127,7 @@ fun CreateListingScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
-            Spacer(modifier = Modifier.height(12.dp))
-
+            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = description,
@@ -123,13 +137,13 @@ fun CreateListingScreen(
                 shape = RoundedCornerShape(12.dp),
                 maxLines = 4
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             CategoryDropDown(
                 selectedCategory = category,
                 onCategorySelected = { category = it }
             )
-
+            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = price,
@@ -139,7 +153,7 @@ fun CreateListingScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = phoneNumber,
@@ -149,22 +163,49 @@ fun CreateListingScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
-                    viewModel.insertListing(
+                    listingViewModel.insertListing(
                         title = title,
                         price = price,
                         phoneNumber = phoneNumber,
                         description = description,
                         category = category,
                         imageUri = imageUri?.toString()
-                    ).also { navController.navigate("listing") }
-                }, modifier = Modifier.fillMaxWidth()
+                    )
+                }, enabled = !isLoading, modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Submit Product")
+                Text(if (isLoading) "Uploading..." else "Submit Product")
             }
+            if (title.isBlank() || price.isBlank() || phoneNumber.isBlank()) {
+                Toast.makeText(context, "Fill data in all the fields", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+        if (uiState is ListingUiState.Loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+        if (uiState is ListingUiState.Error) {
+            Toast.makeText(
+                context,
+                (uiState as ListingUiState.Error).message,
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
+
+//    when (uiState) {
+//        is ListingUiState.Loading -> {
+//            CircularProgressIndicator()
+//        }
+//
+//        is ListingUiState.Error -> {
+//            Text((uiState as ListingUiState.Error).message)
+//        }
+//        else -> {}
+//    }
 }

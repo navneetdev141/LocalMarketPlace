@@ -5,8 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.*
-import com.example.localmarketplace.presentation.screens.CreateListingScreen
-import com.example.localmarketplace.presentation.screens.ListingScreen
+import com.example.localmarketplace.presentation.listing.ListingScreen
 import com.example.localmarketplace.presentation.screens.LoginScreen
 import com.example.localmarketplace.presentation.screens.SignupScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -31,7 +30,7 @@ class MainActivity : ComponentActivity() {
                 composable("signup") { SignupScreen(navController) }
                 composable("login") { LoginScreen(navController) }
                 composable("listing") { ListingScreen(navController) }
-                composable("create_listing") { CreateListingScreen(navController) }
+                //composable("home_listing") { HomeListingsScreen(navController) }
                 //composable("listing_detail/{listingId}") { ListingDetailScreen(listingEntity = ) }
             }
         }

@@ -34,7 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.localmarketplace.data.ListingEntity
-import com.example.localmarketplace.presentation.ListingViewModel
+import com.example.localmarketplace.presentation.listing.ListingViewModel
 
 @Composable
 fun ListingDetailScreen(listingEntity: ListingEntity,navController: NavController, viewModel: ListingViewModel = hiltViewModel()) {
