@@ -1,5 +1,6 @@
 package com.example.localmarketplace.presentation.listing
 
+import android.R
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +37,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -65,16 +70,14 @@ fun ListingScreen(
     val uiState by listingViewModel.uiState.collectAsState()
     val isLoading = uiState is ListingUiState.Loading
 
-    val imagePath = imageUri.toString()
-
-    LaunchedEffect(uiState) {
-        if (uiState is ListingUiState.Success) {
+    if (uiState is ListingUiState.Success) {
+        LaunchedEffect(Unit) {
             navController.navigate("home_listing")
             listingViewModel.resetState()
         }
     }
 
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
@@ -91,33 +94,44 @@ fun ListingScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.Transparent)
-                    .padding(50.dp), horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.Top
+                    .padding(top = 50.dp),
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = "Add Product",
                     style = MaterialTheme.typography.headlineMedium,
+                    textDecoration = TextDecoration.Underline,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Preview image
-            imageUri?.let { uri ->
-                AsyncImage(
-                    model = uri,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(200.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = { launcher.launch("image/*") },
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Text(text = "Choose Image")
+                // Preview image
+                imageUri?.let { uri ->
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(200.dp),
+                        alignment = Alignment.Center
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = { launcher.launch("image/*") },
+                ) {
+                    Text(text = "Choose Image")
+                }
             }
+
+
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
@@ -125,7 +139,8 @@ fun ListingScreen(
                 onValueChange = { title = it },
                 label = { Text("Enter the Product's Name ") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -143,6 +158,7 @@ fun ListingScreen(
                 selectedCategory = category,
                 onCategorySelected = { category = it }
             )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
@@ -150,7 +166,8 @@ fun ListingScreen(
                 onValueChange = { price = it },
                 label = { Text("Enter the price you want for this product ") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -160,13 +177,18 @@ fun ListingScreen(
                 onValueChange = { phoneNumber = it },
                 label = { Text("Enter your Phone Number") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
+                    if (title.isBlank() || price.isBlank() || phoneNumber.isBlank()) {
+                        Toast.makeText(context, "Fill all fields", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
                     listingViewModel.insertListing(
                         title = title,
                         price = price,
@@ -175,37 +197,27 @@ fun ListingScreen(
                         category = category,
                         imageUri = imageUri?.toString()
                     )
-                }, enabled = !isLoading, modifier = Modifier.fillMaxWidth()
+                }, enabled = !isLoading, modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
             ) {
                 Text(if (isLoading) "Uploading..." else "Submit Product")
             }
-            if (title.isBlank() || price.isBlank() || phoneNumber.isBlank()) {
-                Toast.makeText(context, "Fill data in all the fields", Toast.LENGTH_SHORT).show()
-            }
+
 
         }
         if (uiState is ListingUiState.Loading) {
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
             )
         }
         if (uiState is ListingUiState.Error) {
-            Toast.makeText(
-                context,
-                (uiState as ListingUiState.Error).message,
-                Toast.LENGTH_SHORT
-            ).show()
+            LaunchedEffect(Unit) {
+                Toast.makeText(
+                    context,
+                    (uiState as ListingUiState.Error).message,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
-
-//    when (uiState) {
-//        is ListingUiState.Loading -> {
-//            CircularProgressIndicator()
-//        }
-//
-//        is ListingUiState.Error -> {
-//            Text((uiState as ListingUiState.Error).message)
-//        }
-//        else -> {}
-//    }
 }
