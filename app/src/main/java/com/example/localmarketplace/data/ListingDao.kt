@@ -1,6 +1,7 @@
 package com.example.localmarketplace.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -14,4 +15,8 @@ interface ListingDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertListing(listing: ListingEntity)
+
+
+    @Delete()
+    suspend fun deleteListing(listing: ListingEntity)
 }

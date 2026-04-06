@@ -5,10 +5,15 @@ import javax.inject.Inject
 
 class ListingRepository @Inject constructor(private val listingDao: ListingDao) {
 
-    fun getAllListings(): Flow<List<ListingEntity>> = listingDao.getAllListings()
-
+    fun getAllListings(): Flow<List<ListingEntity>> {
+        return listingDao.getAllListings()
+    }
 
     suspend fun insertListing(listing: ListingEntity) {
         listingDao.insertListing(listing)
+    }
+
+    suspend fun deleteListing(listing: ListingEntity) {
+        listingDao.deleteListing(listing)
     }
 }

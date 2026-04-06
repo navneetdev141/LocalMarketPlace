@@ -7,8 +7,10 @@ import androidx.room.PrimaryKey
 data class ListingEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val title: String ,
+    val title: String,
     val description: String,
+    val category: String,
     val price: String,
-    val imageUri: String
+    val phoneNumber: String,
+    val imageUri: String?
 )
