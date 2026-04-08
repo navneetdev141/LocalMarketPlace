@@ -195,7 +195,7 @@ fun ListingScreen(
                         phoneNumber = phoneNumber,
                         description = description,
                         category = category,
-                        imageUri = imageUri?.toString()
+                        imageUri = imageUri
                     )
                 }, enabled = !isLoading, modifier = Modifier
                     .fillMaxWidth()
@@ -207,8 +207,12 @@ fun ListingScreen(
 
         }
         if (uiState is ListingUiState.Loading) {
-            CircularProgressIndicator(
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
         if (uiState is ListingUiState.Error) {
             LaunchedEffect(Unit) {

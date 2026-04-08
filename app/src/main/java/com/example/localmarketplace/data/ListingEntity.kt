@@ -12,5 +12,5 @@ data class ListingEntity(
     val category: String,
     val price: String,
     val phoneNumber: String,
-    val imageUri: String?
+    val imageUrl: String?
 )

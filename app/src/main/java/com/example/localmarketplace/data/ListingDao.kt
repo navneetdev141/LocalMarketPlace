@@ -16,7 +16,4 @@ interface ListingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertListing(listing: ListingEntity)
 
-
-    @Delete()
-    suspend fun deleteListing(listing: ListingEntity)
 }

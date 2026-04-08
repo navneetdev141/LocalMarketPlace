@@ -21,8 +21,8 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             ListingDatabase::class.java,
-            "listing_db"
-        ).build()
+            "listing_database"
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Provides

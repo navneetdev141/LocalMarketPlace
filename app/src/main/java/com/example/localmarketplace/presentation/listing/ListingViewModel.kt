@@ -1,14 +1,14 @@
 package com.example.localmarketplace.presentation.listing
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localmarketplace.data.ListingEntity
-import com.example.localmarketplace.data.ListingRepository
+import com.example.localmarketplace.data.repository.ListingRepository
+import com.example.localmarketplace.domain.Listing
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,40 +18,25 @@ class ListingViewModel @Inject constructor(private val listingRepository: Listin
     private val _uiState = MutableStateFlow<ListingUiState>(ListingUiState.Idle)
     val uiState: StateFlow<ListingUiState> = _uiState
 
-    fun insertListing(
-        title: String,
-        price: String,
-        phoneNumber: String,
-        description: String,
-        category: String,
-        imageUri: String?
-    ) {
-        viewModelScope.launch {
-            _uiState.value = ListingUiState.Loading
-
-            try {
-                listingRepository.insertListing(
-                    ListingEntity(
-                        title = title,
-                        price = price,
-                        phoneNumber = phoneNumber,
-                        description = description,
-                        category = category,
-                        imageUri = imageUri
-                    )
-                )
-
-                _uiState.value = ListingUiState.Success
-
-            } catch (e: Exception) {
-                _uiState.value = ListingUiState.Error(
-                    e.message ?: "Something went wrong"
-                )
-            }
-        }
-    }
-
     fun resetState() {
         _uiState.value = ListingUiState.Idle
     }
+
+
+    val listings = listingRepository.getAllListings()
+
+    fun insertListing(title: String,description: String,category: String, price: String, phoneNumber: String,imageUri: Uri?) {
+        viewModelScope.launch {
+            val listing = ListingEntity(
+                title = title,
+                description = description,
+                category = category,
+                price = price,
+                phoneNumber = phoneNumber,
+                imageUrl = imageUri.toString()
+            )
+            listingRepository.insertListing(listing)
+        }
+    }
+
 }

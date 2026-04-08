@@ -19,7 +19,7 @@ fun CategoryDropDown(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit
 ) {
-    val categories = listOf("Electronics", "Clothing", "Home Appliances", "Sports Equipment")
+    val categories = listOf("Stationery", "Sports Equipment", "Home Appliances", "Others")
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(

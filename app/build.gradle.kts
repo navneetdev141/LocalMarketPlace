@@ -63,11 +63,13 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.analytics)
     implementation(libs.play.services.auth)
+    implementation(libs.google.firebase.firestore.ktx)
 
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.storage)
     ksp(libs.androidx.room.compiler)
 
     // Hilt
