@@ -1,8 +1,10 @@
 package com.example.localmarketplace.presentation.listing
 
+import com.example.localmarketplace.domain.Listing
+
 sealed class ListingUiState {
     object Idle : ListingUiState()
     object Loading : ListingUiState()
-    object Success : ListingUiState()
+    data class Success(val data: List<Listing>) : ListingUiState()
     data class Error(val message: String) : ListingUiState()
 }

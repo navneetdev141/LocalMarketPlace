@@ -2,8 +2,8 @@ package com.example.localmarketplace.DI
 
 import android.content.Context
 import androidx.room.Room
-import com.example.localmarketplace.data.ListingDao
-import com.example.localmarketplace.data.ListingDatabase
+import com.example.localmarketplace.data.local.ListingDao
+import com.example.localmarketplace.data.local.ListingDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

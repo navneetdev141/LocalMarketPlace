@@ -1,13 +1,15 @@
-package com.example.localmarketplace.domain
+package com.example.localmarketplace.data.remote
 
-data class Listing(
+
+//dto stands for data transfer object
+data class ListingDto(
     val id: String = "",
     val title: String = "",
     val description: String = "",
     val price: Double = 0.0,
+    val phoneNumber: String = "",
     val category: String = "",
     val imageUrl: String = "",
     val userId: String = "",
-    val phoneNumber: String = "",
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = 0L
 )
