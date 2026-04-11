@@ -8,7 +8,7 @@ class FirestoreService @Inject constructor() {
 
     private val db = FirebaseFirestore.getInstance()
 
-    suspend fun getListings(): List<ListingDto> {
+    suspend fun getAllListings(): List<ListingDto> {
         return try {
             val snapshot = db.collection("listings").get().await()
 

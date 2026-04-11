@@ -34,7 +34,7 @@ package com.example.localmarketplace.presentation.screens
 //import androidx.navigation.NavController
 //import coil.compose.AsyncImage
 //import com.example.localmarketplace.data.local.ListingEntity
-//import com.example.localmarketplace.presentation.listing.ListingViewModel
+//import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 //
 //@Composable
 //fun ListingDetailScreen(listingEntity: ListingEntity,navController: NavController, viewModel: ListingViewModel = hiltViewModel()) {

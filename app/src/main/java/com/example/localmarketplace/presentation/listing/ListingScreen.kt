@@ -48,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.localmarketplace.addTestListing
 import com.example.localmarketplace.getListingsTest
 import com.example.localmarketplace.presentation.components.CategoryDropDown
+import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 
 @Composable
 fun ListingScreen(
