@@ -45,186 +45,184 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.localmarketplace.addTestListing
-import com.example.localmarketplace.getListingsTest
 import com.example.localmarketplace.presentation.components.CategoryDropDown
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
-
-@Composable
-fun ListingScreen(
-    navController: NavController,
-    listingViewModel: ListingViewModel = hiltViewModel()
-) {
-
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
-    var price by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        imageUri = uri
-    }
-    val context = LocalContext.current
-
-    val uiState by listingViewModel.uiState.collectAsState()
-    val isLoading = uiState is ListingUiState.Loading
-
-    if (uiState is ListingUiState.Success) {
-        LaunchedEffect(Unit) {
-            navController.navigate("home_listing")
-            listingViewModel.resetState()
-        }
-    }
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp)
-    ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
-        )
-        {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Transparent)
-                    .padding(top = 50.dp),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    text = "Add Product",
-                    style = MaterialTheme.typography.headlineMedium,
-                    textDecoration = TextDecoration.Underline,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Preview image
-                imageUri?.let { uri ->
-                    AsyncImage(
-                        model = uri,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(200.dp),
-                        alignment = Alignment.Center
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = { launcher.launch("image/*") },
-                ) {
-                    Text(text = "Choose Image")
-                }
-            }
-
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Enter the Product's Name ") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Describe the Product ") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                maxLines = 4
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            CategoryDropDown(
-                selectedCategory = category,
-                onCategorySelected = { category = it }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = price,
-                onValueChange = { price = it },
-                label = { Text("Enter the price you want for this product ") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = phoneNumber,
-                onValueChange = { phoneNumber = it },
-                label = { Text("Enter your Phone Number") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (title.isBlank() || price.isBlank() || phoneNumber.isBlank()) {
-                        Toast.makeText(context, "Fill all fields", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    listingViewModel.insertListing(
-                        title = title,
-                        price = price,
-                        phoneNumber = phoneNumber,
-                        description = description,
-                        category = category,
-                        imageUri = imageUri
-                    )
-                }, enabled = !isLoading, modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text(if (isLoading) "Uploading..." else "Submit Product")
-            }
-
-
-        }
-        if (uiState is ListingUiState.Loading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-        if (uiState is ListingUiState.Error) {
-            LaunchedEffect(Unit) {
-                Toast.makeText(
-                    context,
-                    (uiState as ListingUiState.Error).message,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
-}
+//
+//@Composable
+//fun ListingScreen(
+//    navController: NavController,
+//    listingViewModel: ListingViewModel = hiltViewModel()
+//) {
+//
+//    var title by remember { mutableStateOf("") }
+//    var description by remember { mutableStateOf("") }
+//    var category by remember { mutableStateOf("") }
+//    var price by remember { mutableStateOf("") }
+//    var phoneNumber by remember { mutableStateOf("") }
+//    var imageUri by remember { mutableStateOf<Uri?>(null) }
+//
+//    val launcher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.GetContent()
+//    ) { uri: Uri? ->
+//        imageUri = uri
+//    }
+//    val context = LocalContext.current
+//
+//    val uiState by listingViewModel.uiState.collectAsState()
+//    val isLoading = uiState is ListingUiState.Loading
+//
+//    if (uiState is ListingUiState.Success) {
+//        LaunchedEffect(Unit) {
+//            navController.navigate("home_listing")
+//            listingViewModel.resetState()
+//        }
+//    }
+//
+//    Surface(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(10.dp)
+//    ) {
+//
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(16.dp)
+//                .verticalScroll(rememberScrollState())
+//        )
+//        {
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(Color.Transparent)
+//                    .padding(top = 50.dp),
+//                horizontalArrangement = Arrangement.Center,
+//            ) {
+//                Text(
+//                    text = "Add Product",
+//                    style = MaterialTheme.typography.headlineMedium,
+//                    textDecoration = TextDecoration.Underline,
+//                    fontWeight = FontWeight.Bold,
+//                    modifier = Modifier.padding(bottom = 16.dp)
+//                )
+//            }
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            Column(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalAlignment = Alignment.CenterHorizontally,
+//                verticalArrangement = Arrangement.Center
+//            ) {
+//                // Preview image
+//                imageUri?.let { uri ->
+//                    AsyncImage(
+//                        model = uri,
+//                        contentDescription = null,
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier.size(200.dp),
+//                        alignment = Alignment.Center
+//                    )
+//                }
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                Button(
+//                    onClick = { launcher.launch("image/*") },
+//                ) {
+//                    Text(text = "Choose Image")
+//                }
+//            }
+//
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//
+//            OutlinedTextField(
+//                value = title,
+//                onValueChange = { title = it },
+//                label = { Text("Enter the Product's Name ") },
+//                modifier = Modifier.fillMaxWidth(),
+//                shape = RoundedCornerShape(12.dp),
+//                singleLine = true
+//            )
+//            Spacer(modifier = Modifier.height(8.dp))
+//
+//            OutlinedTextField(
+//                value = description,
+//                onValueChange = { description = it },
+//                label = { Text("Describe the Product ") },
+//                modifier = Modifier.fillMaxWidth(),
+//                shape = RoundedCornerShape(12.dp),
+//                maxLines = 4
+//            )
+//            Spacer(modifier = Modifier.height(8.dp))
+//
+//            CategoryDropDown(
+//                selectedCategory = category,
+//                onCategorySelected = { category = it }
+//            )
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//
+//            OutlinedTextField(
+//                value = price,
+//                onValueChange = { price = it },
+//                label = { Text("Enter the price you want for this product ") },
+//                modifier = Modifier.fillMaxWidth(),
+//                shape = RoundedCornerShape(12.dp),
+//                singleLine = true
+//            )
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//
+//            OutlinedTextField(
+//                value = phoneNumber,
+//                onValueChange = { phoneNumber = it },
+//                label = { Text("Enter your Phone Number") },
+//                modifier = Modifier.fillMaxWidth(),
+//                shape = RoundedCornerShape(12.dp),
+//                singleLine = true
+//            )
+//
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+////            Button(
+////                onClick = {
+////                    if (title.isBlank() || price.isBlank() || phoneNumber.isBlank()) {
+////                        Toast.makeText(context, "Fill all fields", Toast.LENGTH_SHORT).show()
+////                        return@Button
+////                    }
+////                    listingViewModel.insertListing(
+////                        title = title,
+////                        price = price,
+////                        phoneNumber = phoneNumber,
+////                        description = description,
+////                        category = category,
+////                        imageUri = imageUri
+////                    )
+////                }, enabled = !isLoading, modifier = Modifier
+////                    .fillMaxWidth()
+////                    .height(50.dp)
+////            ) {
+////                Text(if (isLoading) "Uploading..." else "Submit Product")
+////            }
+//
+//
+//        }
+//        if (uiState is ListingUiState.Loading) {
+//            Box(
+//                modifier = Modifier.fillMaxSize(),
+//                contentAlignment = Alignment.Center
+//            ) {
+//                CircularProgressIndicator()
+//            }
+//        }
+//        if (uiState is ListingUiState.Error) {
+//            LaunchedEffect(Unit) {
+//                Toast.makeText(
+//                    context,
+//                    (uiState as ListingUiState.Error).message,
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
+//    }
+//}

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "872152025959",
-    "project_id": "localmarketplace-336d4",
-    "storage_bucket": "localmarketplace-336d4.firebasestorage.app"
+    "project_number": "286178948085",
+    "project_id": "collegemarketplace-c467f",
+    "storage_bucket": "collegemarketplace-c467f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:872152025959:android:ba5efd58426e8b4cc1fdc2",
+        "mobilesdk_app_id": "1:286178948085:android:124bdadd80131b0d21a6bc",
         "android_client_info": {
           "package_name": "com.example.localmarketplace"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDRGRGH9_0ywlOsxzO_AJ3I76_4NqsQQaI"
+          "current_key": "AIzaSyDcUfSwyvS-b-V_J_yXNo1NU45itJZKN40"
         }
       ],
       "services": {
