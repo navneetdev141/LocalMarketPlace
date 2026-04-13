@@ -21,57 +21,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.localmarketplace.data.local.ListingEntity
+import com.example.localmarketplace.domain.Listing
 
 @Composable
-fun ListingItem (listing: ListingEntity, onClick: ()-> Unit){
+fun ListingItem (listing: Listing, onDelete: ()-> Unit){
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        elevation = CardDefaults.cardElevation(6.dp)
-    ) {
-
-        Row(modifier = Modifier.padding(12.dp)) {
-
-            // Image
-            AsyncImage(
-                model = listing.imageUri,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(90.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(Modifier.width(12.dp))
-
-            // Text content
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-
-                Text(
-                    text = listing.title,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = "₹${listing.price}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = listing.description,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-        }
-    }
 }

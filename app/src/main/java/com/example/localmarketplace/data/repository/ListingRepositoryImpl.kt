@@ -1,7 +1,6 @@
 package com.example.localmarketplace.data.repository
 
 import com.example.localmarketplace.data.ListingDao
-import com.example.localmarketplace.data.local.ListingDao
 import com.example.localmarketplace.data.mapper.toDomain
 import com.example.localmarketplace.data.mapper.toDto
 import com.example.localmarketplace.data.mapper.toEntity
@@ -40,7 +39,7 @@ class ListingRepositoryImpl @Inject constructor(
 
     }
 
-    suspend fun addListing(listing: Listing){
+    suspend fun addListing(listing: Listing) {
 
         //while adding data to the firestore ,it generates a random id for the listing
         //which won't match with the room database
@@ -48,6 +47,7 @@ class ListingRepositoryImpl @Inject constructor(
         val id = UUID.randomUUID().toString()
         val newListing = listing.copy(id = id)
 
+        //adding the new listing to the firebase
         listingDao.insertListing(newListing.toEntity())
 
         try {
@@ -57,7 +57,7 @@ class ListingRepositoryImpl @Inject constructor(
         }
     }
 
-    suspend fun deleteListing(listing: Listing){
+    suspend fun deleteListing(listing: Listing) {
         firestore.deleteListing(listing.id)
         listingDao.deleteListing(listing.toEntity())
     }

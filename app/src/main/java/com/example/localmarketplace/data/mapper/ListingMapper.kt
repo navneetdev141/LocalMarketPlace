@@ -45,3 +45,17 @@ fun ListingDto.toEntity(): ListingEntity {
         createdAt = createdAt
     )
 }
+
+fun Listing.toDto(): ListingDto {
+    return ListingDto(
+        id = id,
+        title = title,
+        description = description,
+        price = price,
+        category = category,
+        imageUrl = imageUrl,
+        userId = userId,
+        phoneNumber = phoneNumber,
+        createdAt = createdAt
+    )
+}
