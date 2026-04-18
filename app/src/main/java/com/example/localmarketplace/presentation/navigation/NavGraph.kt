@@ -27,7 +27,7 @@ fun AppNavGraph(viewModel: ListingViewModel) {
         composable("add") {
             AddListingScreen(
                 viewModel = viewModel,
-                onBack = {
+                onListingAdded = {
                     navController.popBackStack()
                 }
             )

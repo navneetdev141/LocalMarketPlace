@@ -23,13 +23,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.localmarketplace.domain.Listing
+import com.example.localmarketplace.presentation.components.CategoryDropDown
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 
 @Composable
-fun AddListingScreen(viewModel: ListingViewModel, onBack: () -> Unit) {
+fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
     var title by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    val categories = listOf(
+        "Stationery",
+        "Sports Equipment",
+        "Home Appliances",
+        "Others"
+    )
+    var selectedCategory by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -53,6 +61,7 @@ fun AddListingScreen(viewModel: ListingViewModel, onBack: () -> Unit) {
 
         Button(
             onClick = { launcher.launch("image/*") },
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Choose Image")
         }
@@ -68,7 +77,14 @@ fun AddListingScreen(viewModel: ListingViewModel, onBack: () -> Unit) {
             value = price,
             onValueChange = { price = it },
             label = { Text("Price") },
+
             modifier = Modifier.fillMaxWidth()
+        )
+
+        CategoryDropDown(
+            categories = categories,
+            selectedCategory = selectedCategory,
+            onCategorySelected = { selectedCategory = it }
         )
 
         OutlinedTextField(
@@ -87,15 +103,11 @@ fun AddListingScreen(viewModel: ListingViewModel, onBack: () -> Unit) {
                 description = description,
                 imageUrl = imageUri?.toString() ?: ""
             )
-
             viewModel.addListing(listing)
-        }) {
+            onListingAdded()
+        },
+            modifier = Modifier.fillMaxWidth()) {
             Text("Add Listing")
         }
-
-        Button(onClick = onBack) {
-            Text("Go Back")
-        }
-
     }
 }
