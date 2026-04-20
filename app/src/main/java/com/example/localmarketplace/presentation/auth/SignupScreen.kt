@@ -1,4 +1,4 @@
-package com.example.localmarketplace.presentation.screens
+package com.example.localmarketplace.presentation.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
@@ -8,12 +8,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,9 +34,27 @@ import com.google.firebase.auth.auth
 
 
 @Composable
-fun SignupScreen(navController: NavController, modifier: Modifier = Modifier) {
+fun SignupScreen(authViewModel: AuthViewModel,navController: NavController, modifier: Modifier = Modifier) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val state by authViewModel.state.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(state) {
+        when(state){
+            is AuthState.Success ->{
+                Toast.makeText(context, "SignUp Successful. Please Login", Toast.LENGTH_SHORT).show()
+                navController.navigate("login"){
+                    popUpTo("signup"){inclusive = true}
+                }
+            }
+            is AuthState.Error ->{
+                Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            }
+            else -> Unit
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -62,29 +84,20 @@ fun SignupScreen(navController: NavController, modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            val context = LocalContext.current
-
             Button(onClick = {
                 if (email.isBlank() || password.isBlank()){
                     Toast.makeText(context, "Please enter an email and password", Toast.LENGTH_SHORT).show()
                 }else{
-                    Firebase.auth.createUserWithEmailAndPassword(email,password)
-                        .addOnCompleteListener { task ->
-                            if(task.isSuccessful){
-                                Toast.makeText(context, "Sign Up Successful,You can login now.", Toast.LENGTH_SHORT).show()
-                                navController.navigate("login"){
-                                    popUpTo("signup"){inclusive = true}
-                                }
-                            }
-                            else{
-                                Toast.makeText(context, task.exception?.message?: "Sign Up Failed", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+                    authViewModel.signup(email,password)
                 }
-
             },modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Sign Up")
+                if (state is AuthState.Loading)
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp)
+                    ) else {
+                    Text("Sign Up")
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -23,9 +23,12 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.localmarketplace.data.local.ListingEntity
 import com.example.localmarketplace.domain.Listing
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ListingItem (listing: Listing, onDelete: ()-> Unit){
+
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
     Card(
         modifier = Modifier
@@ -40,8 +43,10 @@ fun ListingItem (listing: Listing, onDelete: ()-> Unit){
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(onClick = onDelete) {
-                Text("Delete")
+            if (listing.userId == currentUserId) {
+                Button(onClick = onDelete) {
+                    Text("Delete")
+                }
             }
         }
     }
