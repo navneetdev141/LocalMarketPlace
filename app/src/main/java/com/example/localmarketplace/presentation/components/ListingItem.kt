@@ -1,5 +1,6 @@
 package com.example.localmarketplace.presentation.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,12 +22,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.example.localmarketplace.data.local.ListingEntity
 import com.example.localmarketplace.domain.Listing
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun ListingItem (listing: Listing, onDelete: ()-> Unit){
+fun ListingItem(listing: Listing, onDelete: () -> Unit) {
 
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
@@ -36,6 +38,11 @@ fun ListingItem (listing: Listing, onDelete: ()-> Unit){
             .padding(8.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+
+            Image(
+                painter = rememberAsyncImagePainter(listing.imageUrl),
+                contentDescription = null
+            )
 
             Text(text = listing.title)
             Text(text = "₹${listing.price}")
