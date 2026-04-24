@@ -9,9 +9,12 @@ import com.example.localmarketplace.data.repository.ListingRepositoryImpl
 import com.example.localmarketplace.domain.Listing
 import com.example.localmarketplace.presentation.listing.ListingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,7 +26,18 @@ class ListingViewModel @Inject constructor(private val repository: ListingReposi
     private val _uiState = MutableStateFlow<ListingUiState>(ListingUiState.Idle)
     val uiState: StateFlow<ListingUiState> = _uiState
 
-    val listings = repository.getAllListings()
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory : StateFlow<String?> = _selectedCategory
+
+    private val _searchQuery = MutableStateFlow("")
+    var searchQuery : StateFlow<String> = _searchQuery
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val listings = combine(searchQuery, selectedCategory) { query, category ->
+        query to category
+    }.flatMapLatest { (query, category) ->
+        repository.getListings(query, category)
+    }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -36,14 +50,21 @@ class ListingViewModel @Inject constructor(private val repository: ListingReposi
         }
     }
 
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun updateSelectedCategory(category: String?) {
+        _selectedCategory.value = category
+    }
+
     fun addListing(listing: Listing, imageUri: Uri?, context: Context) {
         viewModelScope.launch {
             _uiState.value = ListingUiState.Loading
             try {
-                repository.addListing(listing,imageUri,context)
-                _uiState.value = ListingUiState.Loading
-            }
-            catch (e: Exception){
+                repository.addListing(listing, imageUri, context)
+                _uiState.value = ListingUiState.Success(listings.value)
+            } catch (e: Exception) {
                 _uiState.value = ListingUiState.Error(e.message ?: "Upload Failed")
             }
 

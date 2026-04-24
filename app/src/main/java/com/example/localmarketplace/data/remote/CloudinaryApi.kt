@@ -10,6 +10,6 @@ interface CloudinaryApi {
     @POST("v1_1/dq4ksjfex/image/upload")
     suspend fun uploadImage(
         @Part file: MultipartBody.Part,
-        @Part("upload_preset") uploadPreset : String
+        @Part("upload_preset") uploadPreset : okhttp3.RequestBody
     ): CloudinaryResponse
 }

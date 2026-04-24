@@ -1,5 +1,6 @@
 package com.example.localmarketplace.data.repository
 
+import android.R.attr.query
 import android.content.Context
 import android.net.Uri
 import com.example.localmarketplace.data.ListingDao
@@ -7,17 +8,14 @@ import com.example.localmarketplace.data.mapper.toDomain
 import com.example.localmarketplace.data.mapper.toDto
 import com.example.localmarketplace.data.mapper.toEntity
 import com.example.localmarketplace.data.remote.CloudinaryApi
-import com.example.localmarketplace.data.remote.CloudinaryResponse
 import com.example.localmarketplace.data.remote.FirestoreService
 import com.example.localmarketplace.domain.Listing
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.net.URI
 import java.util.UUID
 import javax.inject.Inject
 
@@ -27,10 +25,10 @@ class ListingRepositoryImpl @Inject constructor(
     private val firestore: FirestoreService,
     private val cloudinaryApi: CloudinaryApi
 ) {
-    fun getAllListings(): Flow<List<Listing>> {
-        return listingDao.getAllListings().map { list ->
-            list.map { it.toDomain() }
-        }
+
+    fun getListings(query: String, category: String?): Flow<List<Listing>> {
+        return listingDao.searchAndFilter(query, category)
+            .map { list -> list.map { it.toDomain() } }
     }
 
     suspend fun syncListings() {
@@ -49,7 +47,7 @@ class ListingRepositoryImpl @Inject constructor(
 
     }
 
-    suspend fun addListing(listing: Listing, imageUri: Uri?,context: Context) {
+    suspend fun addListing(listing: Listing, imageUri: Uri?, context: Context) {
 
         var imageUrl = ""
         if (imageUri != null) {
@@ -89,6 +87,8 @@ class ListingRepositoryImpl @Inject constructor(
 
     suspend fun uploadToCloudinary(uri: Uri, context: Context): String {
 
+        val presetPart = "eicurqzl".toRequestBody("text/plain".toMediaTypeOrNull())
+
         val inputStream = context.contentResolver.openInputStream(uri)
             ?: throw IllegalStateException("Failed to open image")
 
@@ -103,9 +103,8 @@ class ListingRepositoryImpl @Inject constructor(
 
         val response = cloudinaryApi.uploadImage(
             file = body,
-            uploadPreset = "upload_preset"
+            uploadPreset = presetPart
         )
-
         return response.secure_url
     }
 }

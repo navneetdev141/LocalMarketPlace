@@ -11,6 +11,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ListingDao {
 
+    @Query(
+        "SELECT * FROM listings " +
+                "WHERE title LIKE '%' || :query || '%' " +
+                "AND (:category IS NULL OR category = :category)"+
+                "ORDER BY createdAt DESC"
+    )
+    fun searchAndFilter(query: String, category: String?): Flow<List<ListingEntity>>
+
     @Query("SELECT * FROM listings")
     fun getAllListings(): Flow<List<ListingEntity>>
 

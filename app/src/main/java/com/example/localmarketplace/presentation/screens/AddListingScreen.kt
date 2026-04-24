@@ -65,6 +65,7 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                 Toast.makeText(context, "Listing added", Toast.LENGTH_SHORT).show()
                 onListingAdded()
             }
+
             is ListingUiState.Error -> {
                 Toast.makeText(
                     context,
@@ -72,12 +73,15 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+
             else -> Unit
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()){
-        Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)) {
 
             imageUri?.let {
                 Image(
@@ -127,30 +131,30 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = {
-                val listing = Listing(
-                    title = title,
-                    price = price.toDoubleOrNull() ?: 0.0,
-                    description = description,
-                )
-                viewModel.addListing(listing,imageUri,context)
-            },
+            Button(
+                onClick = {
+                    val listing = Listing(
+                        title = title,
+                        price = price.toDoubleOrNull() ?: 0.0,
+                        description = description,
+                        category = selectedCategory
+                    )
+                    viewModel.addListing(listing, imageUri, context)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = uiState !is ListingUiState.Loading
             ) {
-                if (uiState is ListingUiState.Loading){
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.3f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-                else {
-                    Text("Add Listing")
-                }
+                Text("Add Listing")
+            }
+        }
+        if (uiState is ListingUiState.Loading){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
         }
     }
