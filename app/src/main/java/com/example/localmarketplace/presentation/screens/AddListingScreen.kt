@@ -81,7 +81,8 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)) {
+            .padding(24.dp)
+            .padding(top = 35.dp)) {
 
             imageUri?.let {
                 Image(

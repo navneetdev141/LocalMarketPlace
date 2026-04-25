@@ -2,12 +2,16 @@ package com.example.localmarketplace.presentation.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.localmarketplace.data.remote.FirestoreService
 import com.example.localmarketplace.data.repository.ListingRepositoryImpl
 import com.example.localmarketplace.domain.Listing
 import com.example.localmarketplace.presentation.listing.ListingUiState
+import com.example.localmarketplace.utils.NotificationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +24,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ListingViewModel @Inject constructor(private val repository: ListingRepositoryImpl) :
-    ViewModel() {
+class ListingViewModel @Inject constructor(private val repository: ListingRepositoryImpl,private val firestoreService: FirestoreService) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ListingUiState>(ListingUiState.Idle)
     val uiState: StateFlow<ListingUiState> = _uiState
@@ -31,6 +34,9 @@ class ListingViewModel @Inject constructor(private val repository: ListingReposi
 
     private val _searchQuery = MutableStateFlow("")
     var searchQuery : StateFlow<String> = _searchQuery
+
+    private val seenIds = mutableSetOf<String>()
+    private val sessionStartTime = System.currentTimeMillis()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val listings = combine(searchQuery, selectedCategory) { query, category ->
@@ -74,6 +80,23 @@ class ListingViewModel @Inject constructor(private val repository: ListingReposi
     fun deleteListing(listing: Listing) {
         viewModelScope.launch {
             repository.deleteListing(listing)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun observeNewListings(context: Context){
+        firestoreService.listenToNewListings { listingDto ->
+            if (!seenIds.contains(listingDto.id) && listingDto.createdAt > sessionStartTime) {
+                seenIds.add(listingDto.id)
+                NotificationHelper.showNotification(
+                    context,
+                    "New Listing",
+                    listingDto.title
+                )
+            }
+            else{
+                seenIds.add(listingDto.id)
+            }
         }
     }
 }
