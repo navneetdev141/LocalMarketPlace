@@ -1,5 +1,7 @@
 package com.example.localmarketplace.presentation.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
@@ -10,8 +12,10 @@ import com.example.localmarketplace.presentation.auth.LoginScreen
 import com.example.localmarketplace.presentation.auth.SignupScreen
 import com.example.localmarketplace.presentation.screens.AddListingScreen
 import com.example.localmarketplace.presentation.screens.HomeScreen
+import com.example.localmarketplace.presentation.screens.ListingDetailScreen
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavGraph(viewModel: ListingViewModel) {
 
@@ -25,13 +29,27 @@ fun AppNavGraph(viewModel: ListingViewModel) {
                 viewModel = viewModel,
                 onAddClick = {
                     navController.navigate("add")
-                }
+                },
+                onListingClick = {id -> navController.navigate("detail/$id")}
             )
         }
+
         composable("add") {
             AddListingScreen(
                 viewModel = viewModel,
                 onListingAdded = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable("detail/{listingId}") {backStackEntry ->
+
+            val listingId = backStackEntry.arguments?.getString("listingId")
+
+            ListingDetailScreen(
+                listingId = listingId,
+                viewModel = viewModel,
+                onBack = {
                     navController.popBackStack()
                 }
             )

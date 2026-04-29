@@ -1,9 +1,12 @@
 package com.example.localmarketplace.presentation.screens
 
+import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,17 +15,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -31,9 +44,13 @@ import com.example.localmarketplace.presentation.components.ListingItem
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(viewModel: ListingViewModel, onAddClick: () -> Unit) {
+fun HomeScreen(viewModel: ListingViewModel,
+               onAddClick: () -> Unit,
+               onListingClick: (String) -> Unit
+) {
 
     val listings by viewModel.listings.collectAsState()
     val query by viewModel.searchQuery.collectAsState()
@@ -43,59 +60,108 @@ fun HomeScreen(viewModel: ListingViewModel, onAddClick: () -> Unit) {
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
-            if(isGranted){
+            if (isGranted) {
                 viewModel.observeNewListings(context)
             }
         }
     )
     LaunchedEffect(Unit) {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         viewModel.observeNewListings(context)
     }
 
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp)
-    ) {
-        Column(modifier = Modifier
-            .padding(16.dp)
-            .padding(top = 35.dp)) {
-            Button(onClick = onAddClick, modifier = Modifier.fillMaxWidth()) {
-                Text("Go to Add Screen")
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { onAddClick() }) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Listing"
+                )
             }
-            Spacer(modifier = Modifier.height(10.dp))
-
-            OutlinedTextField(
-                value = query,
-                onValueChange = {viewModel
-                    .updateSearchQuery(it)},
-                label = { Text("Search") },
-                modifier = Modifier.fillMaxWidth()
+        },
+        topBar = {
+            TopAppBar(
+                title = { Text("College MarketPlace") }
             )
-            Spacer(modifier = Modifier.height(10.dp))
+        }
 
-            CategoryDropDown(
-                categories = listOf("All","Stationery", "Sports Equipment", "Home Appliances", "Others"),
-                selectedCategory = selectedCategory ?: "All",
-                onCategorySelected = {
-                    viewModel.updateSelectedCategory(
-                        if(it == "All") null else it
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(8.dp)
+        ) {
+            if (listings.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No listings found",
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
-            )
+            } else {
+                LazyColumn {
+                    item {
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = { viewModel.updateSearchQuery(it) },
+                            label = { Text("Search Listings") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null
+                                )
+                            },
+                            trailingIcon = {
+                                if (query.isNotEmpty()) {
+                                    IconButton(onClick = {
+                                        viewModel.updateSearchQuery("")
+                                    }) {
+                                        Icon(Icons.Default.Close, contentDescription = null)
+                                    }
+                                }
+                            },
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp)
+                        )
+                    }
+                    item { Spacer(modifier= Modifier.height(10.dp)) }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            LazyColumn {
-                items(listings) { listing ->
-                    ListingItem(
-                        listing = listing,
-                        onDelete = { viewModel.deleteListing(listing) }
-                    )
+                    item {
+                        CategoryDropDown(
+                            categories = listOf(
+                                "All",
+                                "Stationery",
+                                "Sports Equipment",
+                                "Home Appliances",
+                                "Others"
+                            ),
+                            selectedCategory = selectedCategory ?: "All",
+                            onCategorySelected = {
+                                viewModel.updateSelectedCategory(
+                                    if (it == "All") null else it
+                                )
+                            }
+                        )
+                    }
+                    items(
+                        items = listings,
+                        key = { it.id })
+                    { listing ->
+                        ListingItem(
+                            listing = listing,
+                            onDelete = { viewModel.deleteListing(listing) },
+                            onClick = {onListingClick(listing.id)},
+                            modifier = Modifier.animateItem()
+                        )
+                    }
                 }
             }
         }

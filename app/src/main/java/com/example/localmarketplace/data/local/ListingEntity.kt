@@ -13,7 +13,7 @@ data class ListingEntity(
     val category: String,
     val price: Double,
     val phoneNumber: String,
-    val imageUrl: String,
+    val imageUrls: List<String>,
     val userId: String,
     val createdAt: Long
 )

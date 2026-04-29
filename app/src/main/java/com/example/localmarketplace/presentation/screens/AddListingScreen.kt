@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -24,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,12 +39,14 @@ import com.example.localmarketplace.domain.Listing
 import com.example.localmarketplace.presentation.components.CategoryDropDown
 import com.example.localmarketplace.presentation.listing.ListingUiState
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
     var title by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
     val categories = listOf(
         "Stationery",
         "Sports Equipment",
@@ -51,11 +56,12 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
     var selectedCategory by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val scope = rememberCoroutineScope()
+    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
     val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent())
-        { uri -> imageUri = uri }
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetMultipleContents())
+        { uris -> selectedImages = uris }
 
     val uiState by viewModel.uiState.collectAsState()
 
@@ -84,22 +90,22 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
             .padding(24.dp)
             .padding(top = 35.dp)) {
 
-            imageUri?.let {
+            LazyRow{items(selectedImages)
+            {uri->
                 Image(
-                    painter = rememberAsyncImagePainter(it),
+                    painter = rememberAsyncImagePainter(uri),
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
+                        .size(100.dp)
+                        .padding(4.dp)
                 )
-            }
+            } }
 
             Button(
                 onClick = { launcher.launch("image/*") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Choose Image")
+                Text(text = "Choose Images")
             }
 
             OutlinedTextField(
@@ -130,18 +136,33 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            OutlinedTextField(
+                value = phoneNumber,
+                onValueChange = { phoneNumber = it },
+                label = { Text("Phone Number") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    val listing = Listing(
-                        title = title,
-                        price = price.toDoubleOrNull() ?: 0.0,
-                        description = description,
-                        category = selectedCategory
-                    )
-                    viewModel.addListing(listing, imageUri, context)
-                },
+            Button(onClick ={
+                scope.launch {
+                    try{
+                        val imageUrls = viewModel.uploadImages(selectedImages, context)
+                        val listing = Listing(
+                            title = title,
+                            price = price.toDouble(),
+                            description = description,
+                            phoneNumber = phoneNumber,
+                            category = selectedCategory,
+                            imageUrls = imageUrls
+                        )
+                        viewModel.addListing(listing)
+                    }
+                    catch (e: Exception){
+                        Toast.makeText(context, "Upload Failed  ", Toast.LENGTH_SHORT).show()}
+                }
+            },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = uiState !is ListingUiState.Loading
             ) {
