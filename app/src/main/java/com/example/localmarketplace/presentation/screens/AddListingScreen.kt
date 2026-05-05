@@ -58,7 +58,11 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
-    ) { uris -> selectedImages = uris }
+    ) { uris -> if (uris.size <= 5) {
+        selectedImages = uris
+    } else {
+        Toast.makeText(context, "Max 5 images allowed", Toast.LENGTH_SHORT).show()
+    } }
 
     val uiState by viewModel.uiState.collectAsState()
 
@@ -67,6 +71,7 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
             is ListingUiState.Success -> {
                 Toast.makeText(context, "Listing added", Toast.LENGTH_SHORT).show()
                 onListingAdded()
+                viewModel.resetState()
             }
             is ListingUiState.Error -> {
                 Toast.makeText(context, (uiState as ListingUiState.Error).message, Toast.LENGTH_SHORT).show()
@@ -170,7 +175,7 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 enabled = uiState !is ListingUiState.Loading && title.isNotBlank() && selectedImages.isNotEmpty()
             ) {
-                Text("Add Listing")
+                Text(if (uiState is ListingUiState.Loading) "Uploading..." else "Add Listing")
             }
         }
 

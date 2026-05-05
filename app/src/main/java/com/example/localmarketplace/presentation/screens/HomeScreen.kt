@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.localmarketplace.presentation.components.CategoryDropDown
@@ -94,63 +96,73 @@ fun HomeScreen(viewModel: ListingViewModel,
                 .padding(padding)
                 .padding(8.dp)
         ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { viewModel.updateSearchQuery(it) },
+                label = { Text("Search Listings") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = {
+                            viewModel.updateSearchQuery("")
+                        }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            CategoryDropDown(
+                categories = listOf(
+                    "All",
+                    "Stationery",
+                    "Sports Equipment",
+                    "Home Appliances",
+                    "Others"
+                ),
+                selectedCategory = selectedCategory ?: "All",
+                onCategorySelected = {
+                    viewModel.updateSelectedCategory(
+                        if (it == "All") null else it
+                    )
+                }
+            )
             if (listings.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No listings found",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            modifier = Modifier.size(60.dp),
+                            tint =  Color.Gray
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "No listings found",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             } else {
                 LazyColumn {
-                    item {
-                        OutlinedTextField(
-                            value = query,
-                            onValueChange = { viewModel.updateSearchQuery(it) },
-                            label = { Text("Search Listings") },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = {
-                                if (query.isNotEmpty()) {
-                                    IconButton(onClick = {
-                                        viewModel.updateSearchQuery("")
-                                    }) {
-                                        Icon(Icons.Default.Close, contentDescription = null)
-                                    }
-                                }
-                            },
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(60.dp)
-                        )
-                    }
-                    item { Spacer(modifier= Modifier.height(10.dp)) }
-
-                    item {
-                        CategoryDropDown(
-                            categories = listOf(
-                                "All",
-                                "Stationery",
-                                "Sports Equipment",
-                                "Home Appliances",
-                                "Others"
-                            ),
-                            selectedCategory = selectedCategory ?: "All",
-                            onCategorySelected = {
-                                viewModel.updateSelectedCategory(
-                                    if (it == "All") null else it
-                                )
-                            }
-                        )
-                    }
                     items(
                         items = listings,
                         key = { it.id })

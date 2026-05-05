@@ -30,8 +30,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.localmarketplace.R
 import com.example.localmarketplace.domain.Listing
 import com.google.firebase.auth.FirebaseAuth
 
@@ -83,6 +85,8 @@ fun ListingItem(
             AsyncImage(
                 model = listing.imageUrls.firstOrNull(),
                 contentDescription = null,
+                placeholder = painterResource(R.drawable.placeholder),
+                error = painterResource(R.drawable.placeholder),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)

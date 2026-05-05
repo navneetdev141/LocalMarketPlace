@@ -99,6 +99,10 @@ class ListingViewModel @Inject constructor(
         }
     }
 
+    fun resetState(){
+        _uiState.value = ListingUiState.Idle
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun observeNewListings(context: Context) {
         firestoreService.listenToNewListings { listingDto ->
