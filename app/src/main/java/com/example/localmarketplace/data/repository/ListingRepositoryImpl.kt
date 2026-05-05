@@ -48,13 +48,13 @@ class ListingRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addListing(listing: Listing) {
-
         val userId = FirebaseAuth.getInstance().currentUser?.uid
             ?: throw IllegalStateException("User not logged in")
 
         //while adding data to the firestore ,it generates a random id for the listing
         //which won't match with the room database
         //so we assign an id with each listing before adding it to the firestore
+
         val id = UUID.randomUUID().toString()
         val newListing = listing.copy(
             id = id,

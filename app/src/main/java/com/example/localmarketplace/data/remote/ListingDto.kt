@@ -1,7 +1,5 @@
 package com.example.localmarketplace.data.remote
 
-
-//dto stands for data transfer object
 data class ListingDto(
     val id: String = "",
     val title: String = "",

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -30,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -47,21 +49,16 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    val categories = listOf(
-        "Stationery",
-        "Sports Equipment",
-        "Home Appliances",
-        "Others"
-    )
+    val categories = listOf("Stationery", "Sports Equipment", "Home Appliances", "Others")
     var selectedCategory by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetMultipleContents())
-        { uris -> selectedImages = uris }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris -> selectedImages = uris }
 
     val uiState by viewModel.uiState.collectAsState()
 
@@ -71,41 +68,48 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                 Toast.makeText(context, "Listing added", Toast.LENGTH_SHORT).show()
                 onListingAdded()
             }
-
             is ListingUiState.Error -> {
-                Toast.makeText(
-                    context,
-                    (uiState as ListingUiState.Error).message,
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(context, (uiState as ListingUiState.Error).message, Toast.LENGTH_SHORT).show()
             }
-
             else -> Unit
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-            .padding(top = 35.dp)) {
-
-            LazyRow{items(selectedImages)
-            {uri->
-                Image(
-                    painter = rememberAsyncImagePainter(uri),
-                    contentDescription = null,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp)
+                .padding(top = 16.dp)
+        ) {
+            if (selectedImages.isNotEmpty()) {
+                LazyRow(
                     modifier = Modifier
-                        .size(100.dp)
-                        .padding(4.dp)
-                )
-            } }
+                        .fillMaxWidth()
+                        .height(210.dp)
+                        .background(Color.LightGray.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                        .padding(8.dp)
+                ) {
+                    items(selectedImages) { uri ->
+                        Image(
+                            painter = rememberAsyncImagePainter(uri),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(200.dp)
+                                .padding(end = 8.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             Button(
                 onClick = { launcher.launch("image/*") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Choose Images")
+                Text(text = if (selectedImages.isEmpty()) "Choose Images" else "Change Images")
             }
 
             OutlinedTextField(
@@ -119,7 +123,6 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                 value = price,
                 onValueChange = { price = it },
                 label = { Text("Price") },
-
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -143,33 +146,35 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Button(onClick ={
-                scope.launch {
-                    try{
-                        val imageUrls = viewModel.uploadImages(selectedImages, context)
-                        val listing = Listing(
-                            title = title,
-                            price = price.toDouble(),
-                            description = description,
-                            phoneNumber = phoneNumber,
-                            category = selectedCategory,
-                            imageUrls = imageUrls
-                        )
-                        viewModel.addListing(listing)
+            Button(
+                onClick = {
+                    scope.launch {
+                        try {
+                            val imageUrls = viewModel.uploadImages(selectedImages, context)
+                            val listing = Listing(
+                                title = title,
+                                price = price.toDoubleOrNull() ?: 0.0,
+                                description = description,
+                                phoneNumber = phoneNumber,
+                                category = selectedCategory,
+                                imageUrls = imageUrls
+                            )
+                            viewModel.addListing(listing)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    catch (e: Exception){
-                        Toast.makeText(context, "Upload Failed  ", Toast.LENGTH_SHORT).show()}
-                }
-            },
+                },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = uiState !is ListingUiState.Loading
+                enabled = uiState !is ListingUiState.Loading && title.isNotBlank() && selectedImages.isNotEmpty()
             ) {
                 Text("Add Listing")
             }
         }
-        if (uiState is ListingUiState.Loading){
+
+        if (uiState is ListingUiState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

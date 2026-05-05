@@ -5,8 +5,9 @@ import android.net.Uri
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import javax.inject.Inject
 
-class CloudinaryService(private val cloudinaryApi: CloudinaryApi) {
+class CloudinaryService @Inject constructor(private val cloudinaryApi: CloudinaryApi) {
 
     suspend fun uploadImage(uri: Uri, context: Context): String {
 

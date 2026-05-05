@@ -2,16 +2,25 @@ package com.example.localmarketplace.presentation.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,7 +31,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -41,8 +52,15 @@ fun ListingDetailScreen(
 
     val listing = listings.find { it.id == listingId }
 
+    val pagerState = rememberPagerState(pageCount = { listing?.imageUrls?.size ?: 0 })
+
     if (listing == null) {
-        Text("Listing not found")
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
         return
     }
 
@@ -61,30 +79,68 @@ fun ListingDetailScreen(
             )
         }
     ) { padding ->
-        Column(modifier = Modifier
-            .padding(padding)
-            .padding(20.dp)
-            .fillMaxSize()
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(20.dp)
+                .fillMaxSize()
         ) {
-            AsyncImage(
-                model = listing.imageUrl,
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth().height(220.dp),
-                contentScale = ContentScale.Crop
-            )
+            if (listing.imageUrls.isNotEmpty()) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                ) { page ->
+                    AsyncImage(
+                        model = listing.imageUrls[page],
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            } else {
+                Text("No Images available")
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = listing.title,
-                style = MaterialTheme.typography.titleLarge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             )
+            {
+                repeat(listing.imageUrls.size) { index ->
 
-            Text(
-                text = "₹${listing.price}",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .padding(2.dp)
+                            .background(
+                                if (pagerState.currentPage == index) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    Color.Gray
+                                },
+                                CircleShape
+                            )
+                    )
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth()
+                , horizontalArrangement = Arrangement.SpaceBetween)
+            {
+                Text(
+                    text = listing.title,
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Text(
+                    text = "₹${listing.price}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(text = listing.description)
