@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.example.localmarketplace.presentation.components.CategoryDropDown
 import com.example.localmarketplace.presentation.components.ListingItem
@@ -49,9 +50,10 @@ import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(viewModel: ListingViewModel,
-               onAddClick: () -> Unit,
-               onListingClick: (String) -> Unit
+fun HomeScreen(
+    viewModel: ListingViewModel,
+    onAddClick: () -> Unit,
+    onListingClick: (String) -> Unit
 ) {
 
     val listings by viewModel.listings.collectAsState()
@@ -86,95 +88,98 @@ fun HomeScreen(viewModel: ListingViewModel,
         },
         topBar = {
             TopAppBar(
-                title = { Text("College MarketPlace") }
+                title = { Text("College MarketPlace")}
             )
         }
 
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(padding)
                 .padding(8.dp)
         ) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = { viewModel.updateSearchQuery(it) },
-                label = { Text("Search Listings") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null
-                    )
-                },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = {
-                            viewModel.updateSearchQuery("")
-                        }) {
-                            Icon(Icons.Default.Close, contentDescription = null)
-                        }
-                    }
-                },
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            CategoryDropDown(
-                categories = listOf(
-                    "All",
-                    "Stationery",
-                    "Sports Equipment",
-                    "Home Appliances",
-                    "Others"
-                ),
-                selectedCategory = selectedCategory ?: "All",
-                onCategorySelected = {
-                    viewModel.updateSelectedCategory(
-                        if (it == "All") null else it
-                    )
-                }
-            )
-            if (listings.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
+            item {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { viewModel.updateSearchQuery(it) },
+                    label = { Text("Search Listings") },
+                    leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            modifier = Modifier.size(60.dp),
-                            tint =  Color.Gray
+                            contentDescription = null
                         )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "No listings found",
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.bodyMedium
+                    },
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            IconButton(onClick = {
+                                viewModel.updateSearchQuery("")
+                            }) {
+                                Icon(Icons.Default.Close, contentDescription = null)
+                            }
+                        }
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                CategoryDropDown(
+                    categories = listOf(
+                        "All",
+                        "Stationery",
+                        "Sports Equipment",
+                        "Home Appliances",
+                        "Others"
+                    ),
+                    selectedCategory = selectedCategory ?: "All",
+                    onCategorySelected = {
+                        viewModel.updateSelectedCategory(
+                            if (it == "All") null else it
                         )
+                    }
+                )
+            }
+            if (listings.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                modifier = Modifier.size(60.dp),
+                                tint = Color.Gray
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = "No listings found",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
             } else {
-                LazyColumn {
-                    items(
-                        items = listings,
-                        key = { it.id })
-                    { listing ->
-                        ListingItem(
-                            listing = listing,
-                            onDelete = { viewModel.deleteListing(listing) },
-                            onClick = {onListingClick(listing.id)},
-                            modifier = Modifier.animateItem()
-                        )
-                    }
+                items(
+                    items = listings,
+                    key = { it.id })
+                { listing ->
+                    ListingItem(
+                        listing = listing,
+                        onDelete = { viewModel.deleteListing(listing) },
+                        onClick = { onListingClick(listing.id) },
+                        modifier = Modifier.animateItem()
+                    )
                 }
+
             }
         }
     }

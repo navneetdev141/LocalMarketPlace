@@ -6,8 +6,10 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.localmarketplace.R
@@ -74,9 +77,9 @@ fun ListingItem(
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(12.dp),
+            .padding(vertical = 4.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
@@ -89,12 +92,13 @@ fun ListingItem(
                 error = painterResource(R.drawable.placeholder),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(160.dp)
                     .clickable{onClick()}
-                    .clip(RoundedCornerShape(12.dp)),
+                    .clip(RoundedCornerShape(12.dp))
+                    ,
                 contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -102,30 +106,35 @@ fun ListingItem(
             ) {
                 Text(
                     text = listing.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    maxLines = 1
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
                 )
 
                 Text(
                     text = "₹${listing.price}",
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 4.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = listing.description,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 maxLines = 2,
-                color = Color.Gray
+                color = Color.Gray,
+                modifier = Modifier.padding(horizontal = 4.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Category : ${listing.category}",
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 4.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -147,7 +156,9 @@ fun ListingItem(
                         Toast.makeText(context, "WhatsApp not installed", Toast.LENGTH_SHORT).show()
                     }
 
-                }) { Text("Contact Seller") }
+                },
+                    contentPadding = PaddingValues(horizontal = 14.dp,vertical = 4.dp),
+                    shape = RoundedCornerShape(10.dp)) { Text("Contact Seller") }
 
                 if (listing.userId == currentUserId) {
                     Button(
