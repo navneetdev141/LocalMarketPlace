@@ -13,15 +13,22 @@ import com.example.localmarketplace.presentation.auth.SignupScreen
 import com.example.localmarketplace.presentation.screens.AddListingScreen
 import com.example.localmarketplace.presentation.screens.HomeScreen
 import com.example.localmarketplace.presentation.screens.ListingDetailScreen
+import com.example.localmarketplace.presentation.screens.MyListingsScreen
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavGraph(viewModel: ListingViewModel) {
 
     val navController = rememberNavController()
+    val currentUser = FirebaseAuth.getInstance().currentUser
 
-    NavHost(navController = navController, startDestination = "login") {
+    val startDestination =
+        if (currentUser != null) "home"
+        else "login"
+
+    NavHost(navController = navController, startDestination = startDestination) {
 
 
         composable("home") {
@@ -30,7 +37,24 @@ fun AppNavGraph(viewModel: ListingViewModel) {
                 onAddClick = {
                     navController.navigate("add")
                 },
-                onListingClick = {id -> navController.navigate("detail/$id")}
+                onListingClick = { id -> navController.navigate("detail/$id") },
+                onMyListingsClick = { navController.navigate("myListings") },
+                onLogoutClick = {
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate("login") {
+                        popUpTo(0)
+                    }
+                }
+            )
+        }
+
+        composable("myListings") {
+            MyListingsScreen(
+                viewModel = viewModel,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onListingClick = { id -> navController.navigate("detail/$id") },
             )
         }
 
@@ -42,7 +66,7 @@ fun AppNavGraph(viewModel: ListingViewModel) {
                 }
             )
         }
-        composable("detail/{listingId}") {backStackEntry ->
+        composable("detail/{listingId}") { backStackEntry ->
 
             val listingId = backStackEntry.arguments?.getString("listingId")
 

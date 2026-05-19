@@ -10,14 +10,10 @@ class FirestoreService @Inject constructor() {
     private val firestore = FirebaseFirestore.getInstance()
 
     suspend fun getAllListings(): List<ListingDto> {
-        return try {
-            val snapshot = firestore.collection("listings").get().await()
+        val snapshot = firestore.collection("listings").get().await()
 
-            snapshot.documents.mapNotNull { doc ->
-                doc.toObject(ListingDto::class.java)?.copy(id = doc.id)
-            }
-        } catch (e: Exception) {
-            emptyList()
+        return snapshot.documents.mapNotNull { doc ->
+            doc.toObject(ListingDto::class.java)?.copy(id = doc.id)
         }
     }
 

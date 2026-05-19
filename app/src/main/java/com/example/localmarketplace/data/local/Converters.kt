@@ -11,7 +11,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun toString(data: String): List<String>{
+    fun fromString(data: String): List<String>{
         return if(data.isEmpty()) emptyList()  else data.split("|")
     }
 }

@@ -1,6 +1,7 @@
 package com.example.localmarketplace.presentation.screens
 
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -56,6 +57,8 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
     val scope = rememberCoroutineScope()
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
+    var isSubmitting by remember { mutableStateOf(false) }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris -> if (uris.size <= 5) {
@@ -69,11 +72,13 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
     LaunchedEffect(uiState) {
         when (uiState) {
             is ListingUiState.Success -> {
+                isSubmitting = false
                 Toast.makeText(context, "Listing added", Toast.LENGTH_SHORT).show()
                 onListingAdded()
                 viewModel.resetState()
             }
             is ListingUiState.Error -> {
+                isSubmitting = false
                 Toast.makeText(context, (uiState as ListingUiState.Error).message, Toast.LENGTH_SHORT).show()
             }
             else -> Unit
@@ -87,6 +92,7 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                 .padding(24.dp)
                 .padding(top = 16.dp)
         ) {
+            Log.d("VM", viewModel.toString())
             if (selectedImages.isNotEmpty()) {
                 LazyRow(
                     modifier = Modifier
@@ -156,6 +162,7 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
             Button(
                 onClick = {
                     scope.launch {
+                        isSubmitting = true
                         try {
                             val imageUrls = viewModel.uploadImages(selectedImages, context)
                             val listing = Listing(
@@ -168,18 +175,20 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                             )
                             viewModel.addListing(listing)
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT).show()
+                            isSubmitting = false
+                            android.util.Log.e("ADD_SCREEN", "Error adding listing", e)
+                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = uiState !is ListingUiState.Loading && title.isNotBlank() && selectedImages.isNotEmpty()
+                enabled = !isSubmitting && title.isNotBlank() && selectedImages.isNotEmpty()
             ) {
                 Text(if (uiState is ListingUiState.Loading) "Uploading..." else "Add Listing")
             }
         }
 
-        if (uiState is ListingUiState.Loading) {
+        if (isSubmitting) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

@@ -2,6 +2,7 @@ package com.example.localmarketplace.data.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.example.localmarketplace.data.ListingDao
 import com.example.localmarketplace.data.mapper.toDomain
 import com.example.localmarketplace.data.mapper.toDto
@@ -19,11 +20,34 @@ import javax.inject.Inject
 class ListingRepositoryImpl @Inject constructor(
     private val listingDao: ListingDao,
     private val firestore: FirestoreService,
-): ListingRepository {
+) : ListingRepository {
 
-    override fun searchListings(query: String, category: String?): Flow<List<Listing>> {
-        return listingDao.searchAndFilter(query, category)
-            .map { list -> list.map { it.toDomain() } }
+    val currentUserId =
+        FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+    override fun getFilteredAndSortedListings(
+        query: String,
+        category: String?,
+        sort: String
+    ): Flow<List<Listing>> {
+        Log.d("DEBUG_REPO", "Querying: query='$query', category='$category', sort='$sort'")
+        return listingDao.searchAndFilter(query, category,currentUserId)
+            .map { list ->
+                Log.d("DEBUG_REPO", "Found ${list.size} items in Room")
+                val domainList = list.map { it.toDomain() }
+
+                when(sort){
+
+                    "price_low" ->
+                        domainList.sortedBy { it.price }
+
+                    "price_high" ->
+                        domainList.sortedByDescending { it.price }
+
+                    else ->
+                        domainList.sortedByDescending { it.createdAt }
+                }
+            }
     }
 
     override fun getAllListings(): Flow<List<Listing>> {
@@ -31,20 +55,28 @@ class ListingRepositoryImpl @Inject constructor(
             .map { list -> list.map { it.toDomain() } }
     }
 
+    override fun getMyListings(userId: String): Flow<List<Listing>> {
+        return listingDao.getMyListings(userId).map{list->
+            list.map{it.toDomain()}
+        }
+    }
+
     override suspend fun syncListings() {
         try {
+            Log.d("DEBUG_REPO", "Starting sync...")
             val remoteListings = firestore.getAllListings()
-
-            //clear the old data
-            listingDao.clearAll()
-
-            //add the new data
-            listingDao.insertListings(remoteListings.map { it.toEntity() })
+            Log.d("DEBUG_REPO", "Fetched ${remoteListings.size} listings from Firestore")
+            
+            if (remoteListings.isNotEmpty()) {
+                listingDao.insertListings(remoteListings.map { it.toEntity() })
+                Log.d("DEBUG_REPO", "Successfully inserted ${remoteListings.size} items into Room")
+            } else {
+                Log.d("DEBUG_REPO", "Firestore returned 0 listings")
+            }
 
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("DEBUG_REPO", "Sync failed: ${e.message}", e)
         }
-
     }
 
     override suspend fun addListing(listing: Listing) {
@@ -63,22 +95,15 @@ class ListingRepositoryImpl @Inject constructor(
         )
         //adding the listing locally
         listingDao.insertListing(newListing.toEntity())
+        Log.d("DB_INSERT", "Inserted locally")
 
         //syncing to firestore
-        try {
-            firestore.addListing(newListing.toDto())
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-
+        firestore.addListing(newListing.toDto())
+        Log.d("DB_INSERT", "Synced to Firestore")
     }
 
     override suspend fun deleteListing(listing: Listing) {
         firestore.deleteListing(listing.id)
         listingDao.deleteListing(listing.toEntity())
     }
-
-
 }
- 

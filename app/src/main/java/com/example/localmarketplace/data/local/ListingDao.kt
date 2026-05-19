@@ -13,14 +13,20 @@ interface ListingDao {
 
     @Query(
         "SELECT * FROM listings " +
-                "WHERE title LIKE '%' || :query || '%' " +
-                "AND (:category IS NULL OR category = :category)"+
+                "WHERE userId != :currentUserId"+
+                " AND title LIKE '%' || :query || '%' " +
+                "AND (:category IS NULL OR category = :category) " +
                 "ORDER BY createdAt DESC"
     )
-    fun searchAndFilter(query: String, category: String?): Flow<List<ListingEntity>>
+    fun searchAndFilter(query: String, category: String?,currentUserId: String): Flow<List<ListingEntity>>
 
     @Query("SELECT * FROM listings")
     fun getAllListings(): Flow<List<ListingEntity>>
+
+    @Query("SELECT * FROM listings WHERE userId = :userId ORDER BY createdAt DESC")
+    fun getMyListings(
+        userId: String
+    ): Flow<List<ListingEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertListing(listing: ListingEntity)
