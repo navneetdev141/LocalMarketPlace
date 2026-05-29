@@ -13,13 +13,14 @@ class FirestoreService @Inject constructor() {
         val snapshot = firestore.collection("listings").get().await()
 
         return snapshot.documents.mapNotNull { doc ->
-            doc.toObject(ListingDto::class.java)?.copy(id = doc.id)
+            doc.toObject(ListingDto::class.java)
         }
     }
 
     suspend fun addListing(listing: ListingDto) {
         firestore.collection("listings")
-            .add(listing)
+            .document(listing.id)
+            .set(listing)
             .await()
     }
 

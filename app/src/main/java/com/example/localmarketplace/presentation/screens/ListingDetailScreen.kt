@@ -2,6 +2,7 @@ package com.example.localmarketplace.presentation.screens
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,14 +47,13 @@ import org.jetbrains.annotations.Async
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListingDetailScreen(
-    listingId: String?,
+    listingId: String,
     viewModel: ListingViewModel,
     onBack: () -> Unit
 ) {
-    val listings by viewModel.listings.collectAsState()
-
-    val listing = listings.find { it.id == listingId }
-
+    val listing by viewModel
+        .getListingById(listingId)
+        .collectAsState(initial = null)
     val pagerState = rememberPagerState(pageCount = { listing?.imageUrls?.size ?: 0 })
 
     if (listing == null) {
@@ -65,6 +65,8 @@ fun ListingDetailScreen(
         }
         return
     }
+
+    val currentListing = listing!!
 
     Scaffold(
         topBar = {
@@ -87,7 +89,7 @@ fun ListingDetailScreen(
                 .padding(20.dp)
                 .fillMaxSize()
         ) {
-            if (listing.imageUrls.isNotEmpty()) {
+            if (currentListing.imageUrls.isNotEmpty()) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
@@ -95,7 +97,7 @@ fun ListingDetailScreen(
                         .height(250.dp)
                 ) { page ->
                     AsyncImage(
-                        model = listing.imageUrls[page],
+                        model = currentListing.imageUrls[page],
                         contentDescription = null,
                         placeholder = painterResource(R.drawable.placeholder),
                         error = painterResource(R.drawable.placeholder),
@@ -114,7 +116,7 @@ fun ListingDetailScreen(
                 horizontalArrangement = Arrangement.Center
             )
             {
-                repeat(listing.imageUrls.size) { index ->
+                repeat(currentListing.imageUrls.size) { index ->
 
                     Box(
                         modifier = Modifier
@@ -135,23 +137,23 @@ fun ListingDetailScreen(
                 , horizontalArrangement = Arrangement.SpaceBetween)
             {
                 Text(
-                    text = listing.title,
+                    text = currentListing.title,
                     style = MaterialTheme.typography.titleLarge
                 )
 
                 Text(
-                    text = "₹${listing.price}",
+                    text = "₹${currentListing.price}",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = listing.description)
+            Text(text = currentListing.description)
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = "Category: ${listing.category}")
+            Text(text = "Category: ${currentListing.category}")
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -160,7 +162,7 @@ fun ListingDetailScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    val url = "https://wa.me/${listing.phoneNumber}"
+                    val url = "https://wa.me/${currentListing.phoneNumber}"
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     context.startActivity(intent)
                 },

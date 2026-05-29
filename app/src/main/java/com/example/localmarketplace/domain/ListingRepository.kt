@@ -11,4 +11,8 @@ interface ListingRepository {
     suspend fun deleteListing(listing: Listing)
     suspend fun syncListings()
 
+    fun getListingById(
+        id: String
+    ): Flow<Listing?>
+
 }

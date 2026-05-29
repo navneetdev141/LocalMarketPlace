@@ -68,7 +68,7 @@ fun AppNavGraph(viewModel: ListingViewModel) {
         }
         composable("detail/{listingId}") { backStackEntry ->
 
-            val listingId = backStackEntry.arguments?.getString("listingId")
+            val listingId = backStackEntry.arguments?.getString("listingId") ?: ""
 
             ListingDetailScreen(
                 listingId = listingId,

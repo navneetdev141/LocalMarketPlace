@@ -13,7 +13,7 @@ interface ListingDao {
 
     @Query(
         "SELECT * FROM listings " +
-                "WHERE userId != :currentUserId"+
+                "WHERE userId != :currentUserId" +
                 " AND title LIKE '%' || :query || '%' " +
                 "AND (:category IS NULL OR category = :category) " +
                 "ORDER BY createdAt DESC"
@@ -40,4 +40,8 @@ interface ListingDao {
     @Query("DELETE FROM listings")
     suspend fun clearAll()
 
+    @Query("SELECT * FROM listings WHERE id = :id")
+    fun getListingById(
+        id: String
+    ): Flow<ListingEntity?>
 }

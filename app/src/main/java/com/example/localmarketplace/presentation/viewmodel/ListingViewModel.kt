@@ -134,5 +134,12 @@ class ListingViewModel @Inject constructor(
         return repository.getMyListings(userId)
 
     }
+
+    fun getListingById(
+        id: String
+    ): Flow<Listing?> {
+
+        return repository.getListingById(id)
+    }
 }
 

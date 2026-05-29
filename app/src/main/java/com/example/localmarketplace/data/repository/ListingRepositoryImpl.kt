@@ -22,18 +22,30 @@ class ListingRepositoryImpl @Inject constructor(
     private val firestore: FirestoreService,
 ) : ListingRepository {
 
-    val currentUserId =
-        FirebaseAuth.getInstance().currentUser?.uid ?: ""
-
     override fun getFilteredAndSortedListings(
         query: String,
         category: String?,
         sort: String
     ): Flow<List<Listing>> {
-        Log.d("DEBUG_REPO", "Querying: query='$query', category='$category', sort='$sort'")
+        val currentUserId =
+            FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+        Log.d("HOME_FILTER", "Current User ID = $currentUserId")
+        Log.d(
+            "HOME_DEBUG",
+            "query = '$query'"
+        )
+
+        Log.d(
+            "HOME_DEBUG",
+            "category = '$category'"
+        )
         return listingDao.searchAndFilter(query, category,currentUserId)
             .map { list ->
-                Log.d("DEBUG_REPO", "Found ${list.size} items in Room")
+                Log.d(
+                    "HOME_DEBUG",
+                    "DAO returned ${list.size} listings"
+                )
                 val domainList = list.map { it.toDomain() }
 
                 when(sort){
@@ -63,17 +75,23 @@ class ListingRepositoryImpl @Inject constructor(
 
     override suspend fun syncListings() {
         try {
-            Log.d("DEBUG_REPO", "Starting sync...")
             val remoteListings = firestore.getAllListings()
-            Log.d("DEBUG_REPO", "Fetched ${remoteListings.size} listings from Firestore")
-            
+            Log.d(
+                "SYNC",
+                "Firestore returned ${remoteListings.size} listings"
+            )
+            remoteListings.forEach {
+                Log.d(
+                    "SYNC_IDS",
+                    "DTO id = ${it.id}, title = ${it.title}"
+                )
+            }
             if (remoteListings.isNotEmpty()) {
                 listingDao.insertListings(remoteListings.map { it.toEntity() })
-                Log.d("DEBUG_REPO", "Successfully inserted ${remoteListings.size} items into Room")
+                Log.d("SYNC", "Inserted into Room")
             } else {
                 Log.d("DEBUG_REPO", "Firestore returned 0 listings")
             }
-
         } catch (e: Exception) {
             Log.e("DEBUG_REPO", "Sync failed: ${e.message}", e)
         }
@@ -105,5 +123,13 @@ class ListingRepositoryImpl @Inject constructor(
     override suspend fun deleteListing(listing: Listing) {
         firestore.deleteListing(listing.id)
         listingDao.deleteListing(listing.toEntity())
+    }
+
+    override fun getListingById(
+        id: String
+    ): Flow<Listing?> {
+
+        return listingDao.getListingById(id)
+            .map { it?.toDomain() }
     }
 }

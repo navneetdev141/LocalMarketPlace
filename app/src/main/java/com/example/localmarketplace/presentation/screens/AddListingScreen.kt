@@ -1,6 +1,7 @@
 package com.example.localmarketplace.presentation.screens
 
 import android.net.Uri
+import android.text.Layout
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -92,7 +93,7 @@ fun AddListingScreen(viewModel: ListingViewModel, onListingAdded: () -> Unit) {
                 .padding(24.dp)
                 .padding(top = 16.dp)
         ) {
-            Log.d("VM", viewModel.toString())
+            Log.d("VM_ADD", viewModel.toString())
             if (selectedImages.isNotEmpty()) {
                 LazyRow(
                     modifier = Modifier
