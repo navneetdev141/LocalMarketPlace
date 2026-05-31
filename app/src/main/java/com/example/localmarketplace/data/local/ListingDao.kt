@@ -20,7 +20,7 @@ interface ListingDao {
     )
     fun searchAndFilter(query: String, category: String?,currentUserId: String): Flow<List<ListingEntity>>
 
-    @Query("SELECT * FROM listings")
+    @Query("SELECT  * FROM listings")
     fun getAllListings(): Flow<List<ListingEntity>>
 
     @Query("SELECT * FROM listings WHERE userId = :userId ORDER BY createdAt DESC")

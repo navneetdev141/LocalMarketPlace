@@ -17,11 +17,14 @@ class FirestoreService @Inject constructor() {
         }
     }
 
+
+
     suspend fun addListing(listing: ListingDto) {
         firestore.collection("listings")
             .document(listing.id)
             .set(listing)
             .await()
+
     }
 
     suspend fun deleteListing(id: String) {
