@@ -126,7 +126,7 @@ fun ListingItem(
                 text = listing.description,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 2,
-                color = Color.Gray,
+                color =MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
             Spacer(modifier = Modifier.height(4.dp))
