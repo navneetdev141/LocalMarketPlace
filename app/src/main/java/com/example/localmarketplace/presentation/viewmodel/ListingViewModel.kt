@@ -3,17 +3,16 @@ package com.example.localmarketplace.presentation.viewmodel
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localmarketplace.data.remote.CloudinaryService
 import com.example.localmarketplace.data.remote.FirestoreService
-import com.example.localmarketplace.data.repository.ListingRepositoryImpl
 import com.example.localmarketplace.domain.Listing
 import com.example.localmarketplace.domain.ListingRepository
 import com.example.localmarketplace.presentation.listing.ListingUiState
 import com.example.localmarketplace.utils.NotificationHelper
-import dagger.Provides
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -55,7 +54,7 @@ class ListingViewModel @Inject constructor(
     }.flatMapLatest { (query, category,sort) ->
         repository.getFilteredAndSortedListings(query, category,sort)
     }.onEach { list ->
-        android.util.Log.d("DEBUG_VM", "Listings emitted: ${list.size} items")
+        Log.d("DEBUG_VM", "Listings emitted: ${list.size} items")
     }
         .stateIn(
             scope = viewModelScope,
@@ -140,6 +139,27 @@ class ListingViewModel @Inject constructor(
     ): Flow<Listing?> {
 
         return repository.getListingById(id)
+    }
+
+    fun updateListing(listing: Listing){
+        viewModelScope.launch {
+            Log.d("UPDATE", "Started")
+            _uiState.value = ListingUiState.Loading
+            try {
+                repository.updateListing(listing)
+                Log.d("UPDATE", "Repository finished")
+
+                _uiState.value = ListingUiState.Success(listings.value)
+                Log.d("UPDATE", "Success state set")
+            }
+            catch (e: Exception){
+                Log.e("UPDATE", "Error", e)
+                _uiState.value =
+                    ListingUiState.Error(
+                        e.message ?: "Update failed"
+                    )
+            }
+        }
     }
 }
 

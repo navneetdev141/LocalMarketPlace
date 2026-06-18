@@ -97,6 +97,20 @@ class ListingRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateListing(listing: Listing) {
+
+        Log.d("UPDATE", "Room insert started")
+
+        listingDao.insertListing(listing.toEntity())
+
+        Log.d("UPDATE", "Room insert finished")
+
+        firestore.updateListing(listing.toDto())
+
+        Log.d("UPDATE", "Firestore update finished")
+
+    }
+
     override suspend fun addListing(listing: Listing) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
             ?: throw IllegalStateException("User not logged in")

@@ -44,7 +44,8 @@ fun MyListingItem(
     listing: Listing,
     onDelete: () -> Unit,
     onClick: () -> Unit,
-    modifier : Modifier = Modifier
+    onEdit: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     val context = LocalContext.current
@@ -136,12 +137,24 @@ fun MyListingItem(
             Spacer(modifier = Modifier.height(8.dp))
 
             if (listing.userId == currentUserId) {
-                Button(
-                    onClick = { showDialog = true },
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Delete")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                )
+                {
+                    Button(
+                        onClick = { showDialog = true },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("Delete")
+                    }
+
+                    Button(
+                        onClick = onEdit,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Edit")
+                    }
                 }
             }
 

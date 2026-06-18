@@ -55,15 +55,20 @@ fun AppNavGraph(viewModel: ListingViewModel) {
                     navController.popBackStack()
                 },
                 onListingClick = { id -> navController.navigate("detail/$id") },
+                onEditListing = {listingId -> navController.navigate("add?listingId=$listingId")}
+
             )
         }
 
-        composable("add") {
+        composable("add?listingId={listingId}") {backStackEntry ->
+
+            val listingId = backStackEntry.arguments?.getString("listingId") ?: ""
             AddListingScreen(
                 viewModel = viewModel,
                 onListingAdded = {
                     navController.popBackStack()
-                }
+                },
+                listingId = listingId
             )
         }
         composable("detail/{listingId}") { backStackEntry ->

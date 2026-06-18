@@ -37,15 +37,14 @@ import com.google.firebase.auth.FirebaseAuth
 fun MyListingsScreen(
     viewModel: ListingViewModel,
     onListingClick: (String) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEditListing: (String) -> Unit
 ) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     val myListings by viewModel
         .getMyListings(userId ?: "")
         .collectAsState(initial = emptyList())
-
-
 
     Scaffold(
         topBar = {
@@ -104,7 +103,8 @@ fun MyListingsScreen(
                     MyListingItem(
                         listing = listing,
                         onDelete = { viewModel.deleteListing(listing) },
-                        onClick = { onListingClick(listing.id) }
+                        onClick = { onListingClick(listing.id) },
+                        onEdit = {onEditListing(listing.id)}
                     )
                 }
             }

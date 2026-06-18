@@ -1,5 +1,6 @@
 package com.example.localmarketplace.data.remote
 
+import com.example.localmarketplace.domain.Listing
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -17,7 +18,13 @@ class FirestoreService @Inject constructor() {
         }
     }
 
+    suspend fun updateListing(listingDto: ListingDto){
 
+        firestore.collection("listings")
+            .document(listingDto.id)
+            .set(listingDto)
+            .await()
+    }
 
     suspend fun addListing(listing: ListingDto) {
         firestore.collection("listings")
