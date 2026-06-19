@@ -1,6 +1,7 @@
 package com.example.localmarketplace.data.remote
 
 import com.example.localmarketplace.domain.Listing
+import com.example.localmarketplace.domain.UserProfile
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -38,6 +39,30 @@ class FirestoreService @Inject constructor() {
         firestore.collection("listings")
             .document(id)
             .delete()
+            .await()
+    }
+    suspend fun createUserProfile(profile: UserProfileDto){
+        firestore.collection("users")
+            .document(profile.userId)
+            .set(profile)
+            .await()
+    }
+
+    suspend fun getUserProfile(userId: String): UserProfileDto{
+        val snapshot =
+            firestore.collection("users")
+                .document(userId)
+                .get()
+                .await()
+
+        return snapshot.toObject(UserProfileDto::class.java)
+            ?: UserProfileDto()
+    }
+
+    suspend fun updateUserProfile(profile: UserProfileDto){
+        firestore.collection("users")
+            .document(profile.userId)
+            .set(profile)
             .await()
     }
 
