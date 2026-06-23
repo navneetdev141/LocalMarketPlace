@@ -25,10 +25,16 @@ class CloudinaryService @Inject constructor(private val cloudinaryApi: Cloudinar
             requestBody
         )
 
-        val response = cloudinaryApi.uploadImage(
-            file = body,
-            uploadPreset = presetPart
-        )
-        return response.secure_url
+        try {
+            val response = cloudinaryApi.uploadImage(
+                file = body,
+                uploadPreset = presetPart
+            )
+            android.util.Log.d("CLOUDINARY", "Upload success: ${response.secure_url}")
+            return response.secure_url
+        } catch (e: Exception) {
+            android.util.Log.e("CLOUDINARY", "Upload failed: ${e.message}", e)
+            throw e
+        }
     }
 }

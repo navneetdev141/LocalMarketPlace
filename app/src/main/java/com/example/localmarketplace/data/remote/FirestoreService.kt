@@ -1,5 +1,7 @@
 package com.example.localmarketplace.data.remote
 
+import com.example.localmarketplace.domain.Listing
+import com.example.localmarketplace.domain.UserProfile
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -10,27 +12,57 @@ class FirestoreService @Inject constructor() {
     private val firestore = FirebaseFirestore.getInstance()
 
     suspend fun getAllListings(): List<ListingDto> {
-        return try {
-            val snapshot = firestore.collection("listings").get().await()
+        val snapshot = firestore.collection("listings").get().await()
 
-            snapshot.documents.mapNotNull { doc ->
-                doc.toObject(ListingDto::class.java)?.copy(id = doc.id)
-            }
-        } catch (e: Exception) {
-            emptyList()
+        return snapshot.documents.mapNotNull { doc ->
+            doc.toObject(ListingDto::class.java)
         }
+    }
+
+    suspend fun updateListing(listingDto: ListingDto){
+
+        firestore.collection("listings")
+            .document(listingDto.id)
+            .set(listingDto)
+            .await()
     }
 
     suspend fun addListing(listing: ListingDto) {
         firestore.collection("listings")
-            .add(listing)
+            .document(listing.id)
+            .set(listing)
             .await()
+
     }
 
     suspend fun deleteListing(id: String) {
         firestore.collection("listings")
             .document(id)
             .delete()
+            .await()
+    }
+    suspend fun createUserProfile(profile: UserProfileDto){
+        firestore.collection("users")
+            .document(profile.userId)
+            .set(profile)
+            .await()
+    }
+
+    suspend fun getUserProfile(userId: String): UserProfileDto{
+        val snapshot =
+            firestore.collection("users")
+                .document(userId)
+                .get()
+                .await()
+
+        return snapshot.toObject(UserProfileDto::class.java)
+            ?: UserProfileDto()
+    }
+
+    suspend fun updateUserProfile(profile: UserProfileDto){
+        firestore.collection("users")
+            .document(profile.userId)
+            .set(profile)
             .await()
     }
 

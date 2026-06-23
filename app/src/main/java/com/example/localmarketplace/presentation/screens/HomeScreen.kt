@@ -2,10 +2,11 @@ package com.example.localmarketplace.presentation.screens
 
 import android.Manifest
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,31 +21,38 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.example.localmarketplace.presentation.components.CategoryDropDown
 import com.example.localmarketplace.presentation.components.ListingItem
+import com.example.localmarketplace.presentation.components.SortRow
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,13 +61,21 @@ import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 fun HomeScreen(
     viewModel: ListingViewModel,
     onAddClick: () -> Unit,
-    onListingClick: (String) -> Unit
+    onListingClick: (String) -> Unit,
+    onMyListingsClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
 
     val listings by viewModel.listings.collectAsState()
     val query by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val selectedSort by viewModel.sortType.collectAsState()
     val context = LocalContext.current
+
+    val drawerState = rememberDrawerState(
+        initialValue = DrawerValue.Closed
+    )
+    val scope = rememberCoroutineScope()
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -77,109 +93,190 @@ fun HomeScreen(
     }
 
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onAddClick() }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Listing"
-                )
-            }
-        },
-        topBar = {
-            TopAppBar(
-                title = { Text("College MarketPlace")}
-            )
-        }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                val user = FirebaseAuth.getInstance().currentUser
 
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .padding(8.dp)
-        ) {
-            item {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { viewModel.updateSearchQuery(it) },
-                    label = { Text("Search Listings") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null
-                        )
-                    },
-                    trailingIcon = {
-                        if (query.isNotEmpty()) {
-                            IconButton(onClick = {
-                                viewModel.updateSearchQuery("")
-                            }) {
-                                Icon(Icons.Default.Close, contentDescription = null)
-                            }
-                        }
-                    },
-                    shape = RoundedCornerShape(16.dp),
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(60.dp)
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Welcome",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = user?.email ?: "No Email",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+                NavigationDrawerItem(
+
+                    label = {
+                        Text("My Listings")
+                    },
+
+                    selected = false,
+
+                    onClick = {
+                        onMyListingsClick()
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    },
+
+                    modifier = Modifier.padding(horizontal = 12.dp)
                 )
-                Spacer(modifier = Modifier.height(10.dp))
-                CategoryDropDown(
-                    categories = listOf(
-                        "All",
-                        "Stationery",
-                        "Sports Equipment",
-                        "Home Appliances",
-                        "Others"
-                    ),
-                    selectedCategory = selectedCategory ?: "All",
-                    onCategorySelected = {
-                        viewModel.updateSelectedCategory(
-                            if (it == "All") null else it
-                        )
+                NavigationDrawerItem(
+
+                    label = {
+                        Text("Logout")
+                    },
+
+                    selected = false,
+
+                    onClick = {
+                        onLogoutClick()
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    },
+
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
+        }
+    ) {
+        Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(onClick = { onAddClick() }) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Listing"
+                    )
+                }
+            },
+            topBar = {
+                TopAppBar(
+                    title = { Text("College MarketPlace") },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    drawerState.open()
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menu"
+                            )
+
+                        }
                     }
                 )
             }
-            if (listings.isEmpty()) {
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(8.dp)
+            ) {
                 item {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-
+                    Log.d("VM", viewModel.toString())
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = { viewModel.updateSearchQuery(it) },
+                        label = { Text("Search Listings") },
+                        leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = null,
-                                modifier = Modifier.size(60.dp),
-                                tint = Color.Gray
+                                contentDescription = null
                             )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "No listings found",
-                                color = Color.Gray,
-                                style = MaterialTheme.typography.bodyMedium
+                        },
+                        trailingIcon = {
+                            if (query.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    viewModel.updateSearchQuery("")
+                                }) {
+                                    Icon(Icons.Default.Close, contentDescription = null)
+                                }
+                            }
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    CategoryDropDown(
+                        categories = listOf(
+                            "All",
+                            "Stationery",
+                            "Sports Equipment",
+                            "Home Appliances",
+                            "Others"
+                        ),
+                        selectedCategory = selectedCategory ?: "All",
+                        onCategorySelected = {
+                            viewModel.updateSelectedCategory(
+                                if (it == "All") null else it
                             )
                         }
-                    }
-                }
-            } else {
-                items(
-                    items = listings,
-                    key = { it.id })
-                { listing ->
-                    ListingItem(
-                        listing = listing,
-                        onDelete = { viewModel.deleteListing(listing) },
-                        onClick = { onListingClick(listing.id) },
-                        modifier = Modifier.animateItem()
                     )
-                }
 
+                    SortRow(
+                        selectedSort = selectedSort,
+                        onSortSelected = { viewModel.updateSortType(it) })
+                }
+                if (listings.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .height(500.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(60.dp),
+                                    tint = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "No listings found",
+                                    color = Color.Gray,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(
+                        items = listings,
+                        key = { it.id })
+                    { listing ->
+                        ListingItem(
+                            listing = listing,
+                            onDelete = { viewModel.deleteListing(listing) },
+                            onClick = { onListingClick(listing.id) },
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+
+                }
             }
         }
     }

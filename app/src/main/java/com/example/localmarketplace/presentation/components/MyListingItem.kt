@@ -1,5 +1,6 @@
 package com.example.localmarketplace.presentation.components
 
+import android.R.attr.onClick
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,7 +18,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,15 +39,14 @@ import com.example.localmarketplace.R
 import com.example.localmarketplace.domain.Listing
 import com.google.firebase.auth.FirebaseAuth
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListingItem(
+fun MyListingItem(
     listing: Listing,
     onDelete: () -> Unit,
     onClick: () -> Unit,
+    onEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
@@ -75,7 +73,6 @@ fun ListingItem(
             }
         )
     }
-
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -126,18 +123,41 @@ fun ListingItem(
                 text = listing.description,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 2,
-                color =MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.Gray,
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
             Spacer(modifier = Modifier.height(4.dp))
-
             Text(
                 text = "Category : ${listing.category}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
+
             Spacer(modifier = Modifier.height(8.dp))
+
+            if (listing.userId == currentUserId) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                )
+                {
+                    Button(
+                        onClick = { showDialog = true },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("Delete")
+                    }
+
+                    Button(
+                        onClick = onEdit,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Edit")
+                    }
+                }
+            }
+
         }
     }
 }

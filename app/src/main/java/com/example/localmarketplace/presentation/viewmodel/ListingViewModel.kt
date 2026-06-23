@@ -3,24 +3,25 @@ package com.example.localmarketplace.presentation.viewmodel
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localmarketplace.data.remote.CloudinaryService
 import com.example.localmarketplace.data.remote.FirestoreService
-import com.example.localmarketplace.data.repository.ListingRepositoryImpl
 import com.example.localmarketplace.domain.Listing
 import com.example.localmarketplace.domain.ListingRepository
 import com.example.localmarketplace.presentation.listing.ListingUiState
 import com.example.localmarketplace.utils.NotificationHelper
-import dagger.Provides
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,14 +42,19 @@ class ListingViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     var searchQuery: StateFlow<String> = _searchQuery
 
+    private val _sortType = MutableStateFlow("latest")
+    val sortType: StateFlow<String> = _sortType
+
     private val seenIds = mutableSetOf<String>()
     private val sessionStartTime = System.currentTimeMillis()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val listings = combine(searchQuery, selectedCategory) { query, category ->
-        query to category
-    }.flatMapLatest { (query, category) ->
-        repository.searchListings(query, category)
+    val listings = combine(searchQuery, selectedCategory, sortType)
+    { query, category, sort -> Triple(query, category, sort)
+    }.flatMapLatest { (query, category,sort) ->
+        repository.getFilteredAndSortedListings(query, category,sort)
+    }.onEach { list ->
+        Log.d("DEBUG_VM", "Listings emitted: ${list.size} items")
     }
         .stateIn(
             scope = viewModelScope,
@@ -80,6 +86,10 @@ class ListingViewModel @Inject constructor(
         _selectedCategory.value = category
     }
 
+    fun updateSortType(sort: String) {
+        _sortType.value = sort
+    }
+
     fun addListing(listing: Listing) {
         viewModelScope.launch {
             _uiState.value = ListingUiState.Loading
@@ -99,7 +109,7 @@ class ListingViewModel @Inject constructor(
         }
     }
 
-    fun resetState(){
+    fun resetState() {
         _uiState.value = ListingUiState.Idle
     }
 
@@ -115,6 +125,39 @@ class ListingViewModel @Inject constructor(
                 )
             } else {
                 seenIds.add(listingDto.id)
+            }
+        }
+    }
+
+    fun getMyListings(userId: String): Flow<List<Listing>> {
+        return repository.getMyListings(userId)
+
+    }
+
+    fun getListingById(
+        id: String
+    ): Flow<Listing?> {
+
+        return repository.getListingById(id)
+    }
+
+    fun updateListing(listing: Listing){
+        viewModelScope.launch {
+            Log.d("UPDATE", "Started")
+            _uiState.value = ListingUiState.Loading
+            try {
+                repository.updateListing(listing)
+                Log.d("UPDATE", "Repository finished")
+
+                _uiState.value = ListingUiState.Success(listings.value)
+                Log.d("UPDATE", "Success state set")
+            }
+            catch (e: Exception){
+                Log.e("UPDATE", "Error", e)
+                _uiState.value =
+                    ListingUiState.Error(
+                        e.message ?: "Update failed"
+                    )
             }
         }
     }
