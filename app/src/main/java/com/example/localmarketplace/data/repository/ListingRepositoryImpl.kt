@@ -20,6 +20,7 @@ import javax.inject.Inject
 class ListingRepositoryImpl @Inject constructor(
     private val listingDao: ListingDao,
     private val firestore: FirestoreService,
+    private val auth: FirebaseAuth
 ) : ListingRepository {
 
     override fun getFilteredAndSortedListings(
@@ -28,7 +29,7 @@ class ListingRepositoryImpl @Inject constructor(
         sort: String
     ): Flow<List<Listing>> {
         val currentUserId =
-            FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            auth.currentUser?.uid ?: ""
 
         Log.d("HOME_FILTER", "Current User ID = $currentUserId")
         Log.d(
@@ -112,7 +113,7 @@ class ListingRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addListing(listing: Listing) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val userId = auth.currentUser?.uid
             ?: throw IllegalStateException("User not logged in")
 
         //while adding data to the firestore ,it generates a random id for the listing

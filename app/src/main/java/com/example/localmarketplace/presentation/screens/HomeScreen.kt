@@ -63,7 +63,8 @@ fun HomeScreen(
     onAddClick: () -> Unit,
     onListingClick: (String) -> Unit,
     onMyListingsClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onProfileClick:() -> Unit
 ) {
 
     val listings by viewModel.listings.collectAsState()
@@ -118,6 +119,17 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
                 }
+                NavigationDrawerItem(
+                    label = {
+                        Text("Profile")
+                    },
+
+                    selected = false,
+
+                    onClick = {
+                        onProfileClick()
+                    }
+                )
                 NavigationDrawerItem(
 
                     label = {

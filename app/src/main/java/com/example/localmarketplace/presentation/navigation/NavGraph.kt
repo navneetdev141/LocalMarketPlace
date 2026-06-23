@@ -14,7 +14,9 @@ import com.example.localmarketplace.presentation.screens.AddListingScreen
 import com.example.localmarketplace.presentation.screens.HomeScreen
 import com.example.localmarketplace.presentation.screens.ListingDetailScreen
 import com.example.localmarketplace.presentation.screens.MyListingsScreen
+import com.example.localmarketplace.presentation.screens.ProfileScreen
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
+import com.example.localmarketplace.presentation.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -44,6 +46,9 @@ fun AppNavGraph(viewModel: ListingViewModel) {
                     navController.navigate("login") {
                         popUpTo(0)
                     }
+                },
+                onProfileClick = {
+                    navController.navigate("profile")
                 }
             )
         }
@@ -95,6 +100,15 @@ fun AppNavGraph(viewModel: ListingViewModel) {
             SignupScreen(
                 authViewModel = authViewModel,
                 navController = navController
+            )
+        }
+
+        composable("profile"){
+            val profileViewModel: ProfileViewModel =
+                hiltViewModel()
+
+            ProfileScreen(
+                profileViewModel = profileViewModel
             )
         }
     }

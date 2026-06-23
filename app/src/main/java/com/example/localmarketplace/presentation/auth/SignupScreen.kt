@@ -1,6 +1,7 @@
 package com.example.localmarketplace.presentation.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,9 +36,13 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 
-
 @Composable
-fun SignupScreen(authViewModel: AuthViewModel,navController: NavController, modifier: Modifier = Modifier) {
+fun SignupScreen(
+    authViewModel: AuthViewModel,
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -45,16 +50,20 @@ fun SignupScreen(authViewModel: AuthViewModel,navController: NavController, modi
     val context = LocalContext.current
 
     LaunchedEffect(state) {
-        when(state){
-            is AuthState.Success ->{
-                Toast.makeText(context, "SignUp Successful. Please Login", Toast.LENGTH_SHORT).show()
-                navController.navigate("login"){
-                    popUpTo("signup"){inclusive = true}
+        when (state) {
+            is AuthState.Success -> {
+                Toast.makeText(context, "SignUp Successful. Please Login", Toast.LENGTH_SHORT)
+                    .show()
+                navController.navigate("login") {
+                    popUpTo("signup") { inclusive = true }
                 }
             }
-            is AuthState.Error ->{
-                Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+
+            is AuthState.Error -> {
+                Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT)
+                    .show()
             }
+
             else -> Unit
         }
     }
@@ -62,15 +71,34 @@ fun SignupScreen(authViewModel: AuthViewModel,navController: NavController, modi
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp), contentAlignment = Alignment.Center
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Sign Up",
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Sign Up",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary)
+                color = MaterialTheme.colorScheme.primary
+            )
             Spacer(modifier = Modifier.height(24.dp))
 
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name") },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -83,7 +111,7 @@ fun SignupScreen(authViewModel: AuthViewModel,navController: NavController, modi
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -100,15 +128,20 @@ fun SignupScreen(authViewModel: AuthViewModel,navController: NavController, modi
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(onClick = {
-                if (email.isBlank() || password.isBlank()){
-                    Toast.makeText(context, "Please enter an email and password", Toast.LENGTH_SHORT).show()
-                }else{
-                    authViewModel.signup(email,password)
-                }
-            },colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            ),
+            Button(
+                onClick = {
+                    if (email.isBlank() || password.isBlank()) {
+                        Toast.makeText(
+                            context,
+                            "Please enter an email and password",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        authViewModel.signup(name, email, password)
+                    }
+                }, colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (state is AuthState.Loading)

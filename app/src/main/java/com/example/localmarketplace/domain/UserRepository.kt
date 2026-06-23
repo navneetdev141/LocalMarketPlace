@@ -5,7 +5,6 @@ interface UserRepository {
     suspend fun createProfile(
         profile: UserProfile
     )
-
     suspend fun getProfile(
         userId: String
     ): UserProfile
