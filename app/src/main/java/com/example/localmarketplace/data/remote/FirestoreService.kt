@@ -7,9 +7,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class FirestoreService @Inject constructor() {
-
-    private val firestore = FirebaseFirestore.getInstance()
+class FirestoreService @Inject constructor(
+    private val firestore: FirebaseFirestore
+) {
 
     suspend fun getAllListings(): List<ListingDto> {
         val snapshot = firestore.collection("listings").get().await()

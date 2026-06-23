@@ -29,4 +29,6 @@ object DatabaseModule {
     fun provideListingDao(db: ListingDatabase): ListingDao {
         return db.listingDao()
     }
+
+
 }
