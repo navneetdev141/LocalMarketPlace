@@ -21,7 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AppNavGraph(viewModel: ListingViewModel) {
+fun AppNavGraph(viewModel: ListingViewModel,profileViewModel: ProfileViewModel) {
 
     val navController = rememberNavController()
     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -49,7 +49,8 @@ fun AppNavGraph(viewModel: ListingViewModel) {
                 },
                 onProfileClick = {
                     navController.navigate("profile")
-                }
+                },
+                profileViewModel = profileViewModel
             )
         }
 
@@ -108,7 +109,10 @@ fun AppNavGraph(viewModel: ListingViewModel) {
                 hiltViewModel()
 
             ProfileScreen(
-                profileViewModel = profileViewModel
+                profileViewModel = profileViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }

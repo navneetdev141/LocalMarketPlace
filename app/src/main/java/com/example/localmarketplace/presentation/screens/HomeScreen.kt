@@ -6,15 +6,18 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,6 +54,8 @@ import com.example.localmarketplace.presentation.components.CategoryDropDown
 import com.example.localmarketplace.presentation.components.ListingItem
 import com.example.localmarketplace.presentation.components.SortRow
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
+import com.example.localmarketplace.presentation.viewmodel.ProfileViewModel
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -60,6 +65,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     viewModel: ListingViewModel,
+    profileViewModel: ProfileViewModel,
     onAddClick: () -> Unit,
     onListingClick: (String) -> Unit,
     onMyListingsClick: () -> Unit,
@@ -72,6 +78,15 @@ fun HomeScreen(
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val selectedSort by viewModel.sortType.collectAsState()
     val context = LocalContext.current
+
+    val profile by profileViewModel.profile.collectAsState()
+    val currentUser = FirebaseAuth.getInstance().currentUser
+
+    LaunchedEffect(Unit) {
+        currentUser?.uid?.let{
+            profileViewModel.getProfile(it)
+        }
+    }
 
     val drawerState = rememberDrawerState(
         initialValue = DrawerValue.Closed
@@ -98,37 +113,38 @@ fun HomeScreen(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                val user = FirebaseAuth.getInstance().currentUser
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = "Welcome",
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Welcome,",
+                            style = MaterialTheme.typography.titleMedium
+                        )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
 
-                    Text(
-                        text = user?.email ?: "No Email",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = profile.name,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(18.dp))
                 }
                 NavigationDrawerItem(
                     label = {
-                        Text("Profile")
+                        Text("My Profile")
                     },
-
                     selected = false,
-
                     onClick = {
                         onProfileClick()
-                    }
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
 
@@ -144,7 +160,6 @@ fun HomeScreen(
                             drawerState.close()
                         }
                     },
-
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(

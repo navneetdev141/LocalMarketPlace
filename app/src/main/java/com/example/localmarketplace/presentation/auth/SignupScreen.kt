@@ -1,5 +1,6 @@
 package com.example.localmarketplace.presentation.auth
 
+import android.R.attr.phoneNumber
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,7 @@ fun SignupScreen(
     modifier: Modifier = Modifier
 ) {
     var name by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -100,6 +102,19 @@ fun SignupScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
+                value = phoneNumber,
+                onValueChange = { phoneNumber = it },
+                label = { Text("Phone No.") },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
@@ -137,7 +152,7 @@ fun SignupScreen(
                             Toast.LENGTH_SHORT
                         ).show()
                     } else {
-                        authViewModel.signup(name, email, password)
+                        authViewModel.signup(name, email, password, phoneNumber)
                     }
                 }, colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
