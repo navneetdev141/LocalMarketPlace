@@ -29,7 +29,7 @@ class AuthViewModel @Inject constructor(
             .addOnFailureListener { _state.value = AuthState.Error(it.message ?: "Login Failed") }
     }
 
-    fun signup(name: String, email: String, password: String) {
+    fun signup(name: String, email: String, password: String, phoneNumber: String) {
         _state.value = AuthState.Loading
 
         auth.createUserWithEmailAndPassword(email, password)
@@ -41,7 +41,7 @@ class AuthViewModel @Inject constructor(
                     userId = user?.uid ?: "",
                     name = name,
                     email = email,
-                    phoneNumber = ""
+                    phoneNumber = phoneNumber
                 )
 
                 viewModelScope.launch {
