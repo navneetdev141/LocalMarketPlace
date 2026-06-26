@@ -1,5 +1,7 @@
 package com.example.localmarketplace.domain
 
+import com.example.localmarketplace.domain.model.UserProfile
+
 interface UserRepository {
 
     suspend fun createProfile(

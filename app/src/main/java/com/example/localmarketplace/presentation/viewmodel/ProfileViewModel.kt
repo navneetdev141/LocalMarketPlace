@@ -2,7 +2,7 @@ package com.example.localmarketplace.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.localmarketplace.domain.UserProfile
+import com.example.localmarketplace.domain.model.UserProfile
 import com.example.localmarketplace.domain.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

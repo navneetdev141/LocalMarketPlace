@@ -41,7 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import com.example.localmarketplace.domain.Listing
+import com.example.localmarketplace.domain.model.Listing
 import com.example.localmarketplace.presentation.components.CategoryDropDown
 import com.example.localmarketplace.presentation.listing.ListingUiState
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel

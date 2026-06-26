@@ -9,8 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localmarketplace.data.remote.CloudinaryService
 import com.example.localmarketplace.data.remote.FirestoreService
-import com.example.localmarketplace.domain.Listing
+import com.example.localmarketplace.domain.model.Listing
 import com.example.localmarketplace.domain.ListingRepository
+import com.example.localmarketplace.domain.WishlistRepository
 import com.example.localmarketplace.presentation.listing.ListingUiState
 import com.example.localmarketplace.utils.NotificationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,6 +31,7 @@ import javax.inject.Inject
 class ListingViewModel @Inject constructor(
     private val repository: ListingRepository,
     private val firestoreService: FirestoreService,
+    private val wishlistRepository: WishlistRepository,
     private val cloudinaryService: CloudinaryService
 ) : ViewModel() {
 
@@ -48,11 +50,36 @@ class ListingViewModel @Inject constructor(
     private val seenIds = mutableSetOf<String>()
     private val sessionStartTime = System.currentTimeMillis()
 
+    val wishlistIds = wishlistRepository.getWishlistIds()
+        .stateIn(
+            scope = viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptySet()
+        )
+    val wishlistListings = wishlistRepository.getWishlistListings()
+        .stateIn(
+            scope = viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
+
+    fun toggleWishlist(listingId: String) {
+        viewModelScope.launch {
+            if (listingId in wishlistIds.value) {
+                wishlistRepository.removeFromWishlist(listingId)
+            }
+            else {
+                wishlistRepository.addToWishlist(listingId)
+            }
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val listings = combine(searchQuery, selectedCategory, sortType)
-    { query, category, sort -> Triple(query, category, sort)
-    }.flatMapLatest { (query, category,sort) ->
-        repository.getFilteredAndSortedListings(query, category,sort)
+    { query, category, sort ->
+        Triple(query, category, sort)
+    }.flatMapLatest { (query, category, sort) ->
+        repository.getFilteredAndSortedListings(query, category, sort)
     }.onEach { list ->
         Log.d("DEBUG_VM", "Listings emitted: ${list.size} items")
     }
@@ -141,7 +168,7 @@ class ListingViewModel @Inject constructor(
         return repository.getListingById(id)
     }
 
-    fun updateListing(listing: Listing){
+    fun updateListing(listing: Listing) {
         viewModelScope.launch {
             Log.d("UPDATE", "Started")
             _uiState.value = ListingUiState.Loading
@@ -151,8 +178,7 @@ class ListingViewModel @Inject constructor(
 
                 _uiState.value = ListingUiState.Success(listings.value)
                 Log.d("UPDATE", "Success state set")
-            }
-            catch (e: Exception){
+            } catch (e: Exception) {
                 Log.e("UPDATE", "Error", e)
                 _uiState.value =
                     ListingUiState.Error(

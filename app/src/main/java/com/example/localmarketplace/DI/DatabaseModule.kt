@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.localmarketplace.data.ListingDao
 import com.example.localmarketplace.data.local.ListingDatabase
+import com.example.localmarketplace.data.local.WishlistDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,6 +30,11 @@ object DatabaseModule {
     fun provideListingDao(db: ListingDatabase): ListingDao {
         return db.listingDao()
     }
-
+    @Provides
+    fun provideWishlistDao(
+        database: ListingDatabase
+    ): WishlistDao {
+        return database.wishlistDao()
+    }
 
 }

@@ -28,7 +28,7 @@ fun SortRow(
 
                 label = { Text(
                     when(sort){
-                        "latest" -> "latest"
+                        "latest" -> "Latest"
                         "price_low" -> "Price ↑"
                         else  -> "Price ↓"
                     }

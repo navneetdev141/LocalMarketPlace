@@ -1,143 +1,172 @@
 package com.example.localmarketplace.presentation.components
 
-import android.content.Intent
-import android.net.Uri
-import android.widget.Toast
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.localmarketplace.R
-import com.example.localmarketplace.domain.Listing
-import com.google.firebase.auth.FirebaseAuth
+import com.example.localmarketplace.domain.model.Listing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListingItem(
     listing: Listing,
-    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+    isWishlisted: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onWishlistClick: () -> Unit,
 ) {
-
-    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-    val context = LocalContext.current
-    var showDialog by remember { mutableStateOf(false) }
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Delete Listing") },
-            text = { Text("Are you sure you want to delete this listing?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    onDelete()
-                    showDialog = false
-                }) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showDialog = false
-                }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(6.dp)
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(20.dp),
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 4.dp
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant
+        )
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-
-            AsyncImage(
-                model = listing.imageUrls.firstOrNull(),
-                contentDescription = null,
-                placeholder = painterResource(R.drawable.placeholder),
-                error = painterResource(R.drawable.placeholder),
+        Column {
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
-                    .clickable { onClick() }
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .height(190.dp)
             ) {
-                Text(
-                    text = listing.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                AsyncImage(
+                    model = listing.imageUrls.firstOrNull(),
+                    contentDescription = listing.title,
+                    placeholder = painterResource(R.drawable.placeholder),
+                    error = painterResource(R.drawable.placeholder),
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 4.dp)
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)),
+                    contentScale = ContentScale.Crop
                 )
-
-                Text(
-                    text = "₹${listing.price}",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
+                            )
+                        )
                 )
+                Surface(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .align(Alignment.TopStart),
+                    shape = RoundedCornerShape(50.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
+                    shadowElevation = 2.dp
+                ) {
+                    Text(
+                        text = listing.category,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                    )
+                }
+                Surface(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(34.dp)
+                        .align(Alignment.TopEnd),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                    shadowElevation = 2.dp
+                ) {
+                    IconButton(
+                        onClick = onWishlistClick,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = if (isWishlisted) Icons.Default.Favorite
+                            else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isWishlisted) "Remove from wishlist"
+                            else "Add to wishlist",
+                            tint = if (isWishlisted) Color(0xFFF43F5E)
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    }
+                }
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = listing.title,
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            text = "₹${listing.price}",
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
 
-            Text(
-                text = listing.description,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2,
-                color =MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "Category : ${listing.category}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+                if (listing.description.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(
+                        text = listing.description,
+                        style = MaterialTheme.typography.bodySmall.copy(lineHeight = 17.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
     }
 }

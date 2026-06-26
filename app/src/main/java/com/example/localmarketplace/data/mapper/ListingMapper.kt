@@ -2,7 +2,7 @@ package com.example.localmarketplace.data.mapper
 
 import com.example.localmarketplace.data.local.ListingEntity
 import com.example.localmarketplace.data.remote.ListingDto
-import com.example.localmarketplace.domain.Listing
+import com.example.localmarketplace.domain.model.Listing
 
 
 fun ListingEntity.toDomain(): Listing {

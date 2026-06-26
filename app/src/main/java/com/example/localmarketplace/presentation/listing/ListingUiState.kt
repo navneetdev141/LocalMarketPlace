@@ -1,6 +1,6 @@
 package com.example.localmarketplace.presentation.listing
 
-import com.example.localmarketplace.domain.Listing
+import com.example.localmarketplace.domain.model.Listing
 
 sealed class ListingUiState {
     object Idle : ListingUiState()

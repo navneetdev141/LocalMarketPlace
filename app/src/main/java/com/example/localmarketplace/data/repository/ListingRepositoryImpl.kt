@@ -8,7 +8,7 @@ import com.example.localmarketplace.data.mapper.toDomain
 import com.example.localmarketplace.data.mapper.toDto
 import com.example.localmarketplace.data.mapper.toEntity
 import com.example.localmarketplace.data.remote.FirestoreService
-import com.example.localmarketplace.domain.Listing
+import com.example.localmarketplace.domain.model.Listing
 import com.example.localmarketplace.domain.ListingRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow

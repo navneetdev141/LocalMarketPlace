@@ -3,7 +3,7 @@ package com.example.localmarketplace.presentation.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localmarketplace.data.remote.UserProfileDto
-import com.example.localmarketplace.domain.UserProfile
+import com.example.localmarketplace.domain.model.UserProfile
 import com.example.localmarketplace.domain.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

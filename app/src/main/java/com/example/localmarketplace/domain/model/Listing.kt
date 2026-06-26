@@ -1,4 +1,4 @@
-package com.example.localmarketplace.domain
+package com.example.localmarketplace.domain.model
 
 data class Listing(
     val id: String = "",
