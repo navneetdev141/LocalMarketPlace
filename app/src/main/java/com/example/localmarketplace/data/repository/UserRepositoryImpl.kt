@@ -3,9 +3,9 @@ package com.example.localmarketplace.data.repository
 import com.example.localmarketplace.data.mapper.toDomain
 import com.example.localmarketplace.data.mapper.toDto
 import com.example.localmarketplace.data.remote.FirestoreService
-import com.example.localmarketplace.domain.UserProfile
+import com.example.localmarketplace.domain.model.UserProfile
 import com.example.localmarketplace.domain.UserRepository
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 
 class UserRepositoryImpl @Inject constructor(

@@ -18,7 +18,11 @@ interface ListingDao {
                 "AND (:category IS NULL OR category = :category) " +
                 "ORDER BY createdAt DESC"
     )
-    fun searchAndFilter(query: String, category: String?,currentUserId: String): Flow<List<ListingEntity>>
+    fun searchAndFilter(
+        query: String,
+        category: String?,
+        currentUserId: String
+    ): Flow<List<ListingEntity>>
 
     @Query("SELECT  * FROM listings")
     fun getAllListings(): Flow<List<ListingEntity>>
@@ -44,4 +48,13 @@ interface ListingDao {
     fun getListingById(
         id: String
     ): Flow<ListingEntity?>
+
+    @Query("""
+    SELECT * FROM listings
+    WHERE id IN (:ids)
+    ORDER BY createdAt DESC
+    """)
+    fun getListingsByIds(
+        ids: List<String>
+    ): Flow<List<ListingEntity>>
 }

@@ -1,7 +1,7 @@
 package com.example.localmarketplace.data.remote
 
-import com.example.localmarketplace.domain.Listing
-import com.example.localmarketplace.domain.UserProfile
+import com.example.localmarketplace.domain.model.Listing
+import com.example.localmarketplace.domain.model.UserProfile
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await

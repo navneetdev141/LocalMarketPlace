@@ -1,5 +1,6 @@
 package com.example.localmarketplace.domain
 
+import com.example.localmarketplace.domain.model.Listing
 import kotlinx.coroutines.flow.Flow
 
 interface ListingRepository {
