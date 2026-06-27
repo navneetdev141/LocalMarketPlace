@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -53,6 +54,9 @@ class ListingViewModel @Inject constructor(
 
     private val seenIds = mutableSetOf<String>()
     private val sessionStartTime = System.currentTimeMillis()
+
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     val wishlistIds = wishlistRepository.getWishlistIds()
         .stateIn(
@@ -86,6 +90,7 @@ class ListingViewModel @Inject constructor(
         repository.getFilteredAndSortedListings(query, category, sort)
     }.onEach { list ->
         Log.d("DEBUG_VM", "Listings emitted: ${list.size} items")
+        _isLoading.value = false
     }
         .stateIn(
             scope = viewModelScope,
@@ -165,26 +170,20 @@ class ListingViewModel @Inject constructor(
         return repository.getMyListings(userId)
 
     }
-
     fun getListingById(
         id: String
     ): Flow<Listing?> {
 
         return repository.getListingById(id)
     }
-
     fun updateListing(listing: Listing) {
         viewModelScope.launch {
-            Log.d("UPDATE", "Started")
             _uiState.value = ListingUiState.Loading
             try {
                 repository.updateListing(listing)
-                Log.d("UPDATE", "Repository finished")
 
                 _uiState.value = ListingUiState.Success(listings.value)
-                Log.d("UPDATE", "Success state set")
             } catch (e: Exception) {
-                Log.e("UPDATE", "Error", e)
                 _uiState.value =
                     ListingUiState.Error(
                         e.message ?: "Update failed"
@@ -192,7 +191,6 @@ class ListingViewModel @Inject constructor(
             }
         }
     }
-
     fun markAsSold(listingId: String) {
         viewModelScope.launch {
             try {
@@ -200,7 +198,6 @@ class ListingViewModel @Inject constructor(
             } catch (e: Exception) { }
         }
     }
-
     fun markAsActive(listingId: String) {
         viewModelScope.launch {
             try {

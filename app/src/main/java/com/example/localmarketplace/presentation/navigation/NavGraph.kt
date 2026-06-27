@@ -15,6 +15,7 @@ import com.example.localmarketplace.presentation.screens.HomeScreen
 import com.example.localmarketplace.presentation.screens.ListingDetailScreen
 import com.example.localmarketplace.presentation.screens.MyListingsScreen
 import com.example.localmarketplace.presentation.screens.ProfileScreen
+import com.example.localmarketplace.presentation.screens.WishlistScreen
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 import com.example.localmarketplace.presentation.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -50,7 +51,8 @@ fun AppNavGraph(viewModel: ListingViewModel,profileViewModel: ProfileViewModel) 
                 onProfileClick = {
                     navController.navigate("profile")
                 },
-                profileViewModel = profileViewModel
+                profileViewModel = profileViewModel,
+                onWishlistClick = {navController.navigate("wishlist")}
             )
         }
 
@@ -114,6 +116,16 @@ fun AppNavGraph(viewModel: ListingViewModel,profileViewModel: ProfileViewModel) 
                 onBack = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable("wishlist") {
+            WishlistScreen(
+                viewModel = viewModel,
+                onListingClick = { listingId ->
+                    navController.navigate("detail/$listingId")
+                },
+                onBack = { navController.popBackStack() }
             )
         }
     }

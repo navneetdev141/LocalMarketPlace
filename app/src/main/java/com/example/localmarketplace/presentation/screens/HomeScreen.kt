@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.localmarketplace.presentation.components.CategoryDropDown
 import com.example.localmarketplace.presentation.components.ListingItem
+import com.example.localmarketplace.presentation.components.ShimmerListingCard
 import com.example.localmarketplace.presentation.components.SortRow
 import com.example.localmarketplace.presentation.viewmodel.ListingViewModel
 import com.example.localmarketplace.presentation.viewmodel.ProfileViewModel
@@ -45,7 +47,8 @@ fun HomeScreen(
     onListingClick: (String) -> Unit,
     onMyListingsClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onWishlistClick: () -> Unit
 ) {
     val listings by viewModel.listings.collectAsState()
     val query by viewModel.searchQuery.collectAsState()
@@ -61,6 +64,9 @@ fun HomeScreen(
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val isLoading by viewModel.isLoading.collectAsState()
+
 
     LaunchedEffect(Unit) {
         currentUser?.uid?.let { profileViewModel.getProfile(it) }
@@ -158,6 +164,26 @@ fun HomeScreen(
                     },
                     selected = false,
                     onClick = { onMyListingsClick(); scope.launch { drawerState.close() } },
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                NavigationDrawerItem(
+                    icon = {
+                        Icon(Icons.Default.Favorite, null)
+                    },
+                    label = {
+                        Text(
+                            "Wishlist",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    },
+                    selected = false,
+                    onClick = {
+                        onWishlistClick()
+                        scope.launch { drawerState.close() }
+                    },
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -327,7 +353,13 @@ fun HomeScreen(
                     Spacer(Modifier.height(4.dp))
                 }
 
-                if (listings.isEmpty()) {
+                if (isLoading) {
+                    item {
+                        repeat(4) {
+                            ShimmerListingCard()
+                        }
+                    }
+                } else if (listings.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
