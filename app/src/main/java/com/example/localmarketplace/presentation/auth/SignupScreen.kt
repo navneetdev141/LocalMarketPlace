@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -154,17 +155,18 @@ fun SignupScreen(
                     } else {
                         authViewModel.signup(name, email, password, phoneNumber)
                     }
-                }, colors = ButtonDefaults.buttonColors(
+                }, enabled =state !is  AuthState.Loading,
+                colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (state is AuthState.Loading)
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp)
-                    ) else {
-                    Text("Sign Up")
-                }
+                Text(
+                    if (state is AuthState.Loading)
+                        "Signing Up..."
+                    else
+                        "Sign Up"
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -176,7 +178,16 @@ fun SignupScreen(
             }) {
                 Text(text = "Already have an account? Log In")
             }
-
+        }
+        if (state is AuthState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
     }
 }

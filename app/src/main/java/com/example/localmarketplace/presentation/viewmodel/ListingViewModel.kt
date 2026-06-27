@@ -14,18 +14,22 @@ import com.example.localmarketplace.domain.ListingRepository
 import com.example.localmarketplace.domain.WishlistRepository
 import com.example.localmarketplace.presentation.listing.ListingUiState
 import com.example.localmarketplace.utils.NotificationHelper
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -37,7 +41,8 @@ class ListingViewModel @Inject constructor(
     private val repository: ListingRepository,
     private val firestoreService: FirestoreService,
     private val wishlistRepository: WishlistRepository,
-    private val cloudinaryService: CloudinaryService
+    private val cloudinaryService: CloudinaryService,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ListingUiState>(ListingUiState.Idle)
@@ -58,13 +63,30 @@ class ListingViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    val wishlistIds = wishlistRepository.getWishlistIds()
+    private val authIdFlow = callbackFlow {
+        val listener = FirebaseAuth.AuthStateListener { auth ->
+            trySend(auth.currentUser?.uid ?: "")
+        }
+        auth.addAuthStateListener(listener)
+        awaitClose { auth.removeAuthStateListener(listener) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), auth.currentUser?.uid ?: "")
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val wishlistIds = authIdFlow.flatMapLatest { userId ->
+        if (userId.isEmpty()) flowOf(emptySet())
+        else wishlistRepository.getWishlistIds(userId)
+    }
         .stateIn(
             scope = viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             emptySet()
         )
-    val wishlistListings = wishlistRepository.getWishlistListings()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val wishlistListings = authIdFlow.flatMapLatest { userId ->
+        if (userId.isEmpty()) flowOf(emptyList())
+        else wishlistRepository.getWishlistListings(userId)
+    }
         .stateIn(
             scope = viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -83,11 +105,13 @@ class ListingViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val listings = combine(searchQuery, selectedCategory, sortType)
-    { query, category, sort ->
-        Triple(query, category, sort)
-    }.flatMapLatest { (query, category, sort) ->
-        repository.getFilteredAndSortedListings(query, category, sort)
+    val listings = combine(searchQuery, selectedCategory, sortType, authIdFlow)
+    { query, category, sort, userId ->
+        val data = Triple(query, category, sort)
+        data to userId
+    }.flatMapLatest { (triple, userId) ->
+        val (query, category, sort) = triple
+        repository.getFilteredAndSortedListings(query, category, sort, userId)
     }.onEach { list ->
         Log.d("DEBUG_VM", "Listings emitted: ${list.size} items")
         _isLoading.value = false
@@ -111,7 +135,11 @@ class ListingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.syncListings()
+            authIdFlow.collect { userId ->
+                if (userId.isNotEmpty()) {
+                    repository.syncListings()
+                }
+            }
         }
     }
 

@@ -45,19 +45,14 @@ class WishlistRepositoryImpl @Inject constructor(
         wishlistDao.removeFromWishlist(entity)
     }
 
-    override fun getWishlistIds(): Flow<Set<String>> {
-        val userId = getCurrentUserId() ?: return flowOf(emptySet())
-
+    override fun getWishlistIds(userId: String): Flow<Set<String>> {
         return wishlistDao.getWishlistIds(userId).map {
             it.toSet()
         }
-
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun getWishlistListings(): Flow<List<Listing>> {
-        val userId = getCurrentUserId() ?: return flowOf(emptyList())
-
+    override fun getWishlistListings(userId: String): Flow<List<Listing>> {
         return wishlistDao.getWishlistIds(userId)
             .flatMapLatest { ids ->
                 if (ids.isEmpty()) {
@@ -66,6 +61,7 @@ class WishlistRepositoryImpl @Inject constructor(
                     listingDao.getListingsByIds(ids)
                 }
             }.map { entities ->
-            entities.map { it.toDomain() }}
+                entities.map { it.toDomain() }
+            }
     }
 }

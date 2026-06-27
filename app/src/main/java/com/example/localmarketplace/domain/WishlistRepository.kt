@@ -10,7 +10,7 @@ interface WishlistRepository {
 
     suspend fun removeFromWishlist(listingId: String)
 
-    fun getWishlistListings(): Flow<List<Listing>>
+    fun getWishlistListings(userId: String): Flow<List<Listing>>
 
-    fun getWishlistIds(): Flow<Set<String>>
+    fun getWishlistIds(userId: String): Flow<Set<String>>
 }

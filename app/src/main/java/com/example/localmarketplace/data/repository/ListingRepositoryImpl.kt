@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.example.localmarketplace.data.ListingDao
+import com.example.localmarketplace.data.local.ListingEntity
 import com.example.localmarketplace.data.mapper.toDomain
 import com.example.localmarketplace.data.mapper.toDto
 import com.example.localmarketplace.data.mapper.toEntity
@@ -27,39 +28,22 @@ class ListingRepositoryImpl @Inject constructor(
     override fun getFilteredAndSortedListings(
         query: String,
         category: String?,
-        sort: String
+        sort: String,
+        currentUserId: String
     ): Flow<List<Listing>> {
-        val currentUserId =
-            auth.currentUser?.uid ?: ""
-
         Log.d("HOME_FILTER", "Current User ID = $currentUserId")
-        Log.d(
-            "HOME_DEBUG",
-            "query = '$query'"
-        )
-
-        Log.d(
-            "HOME_DEBUG",
-            "category = '$category'"
-        )
-        return listingDao.searchAndFilter(query, category,currentUserId)
+        Log.d("HOME_DEBUG", "query = '$query'")
+        Log.d("HOME_DEBUG", "category = '$category'")
+        
+        return listingDao.searchAndFilter(query, category, currentUserId)
             .map { list ->
-                Log.d(
-                    "HOME_DEBUG",
-                    "DAO returned ${list.size} listings"
-                )
+                Log.d("HOME_DEBUG", "DAO returned ${list.size} listings")
                 val domainList = list.map { it.toDomain() }
 
-                when(sort){
-
-                    "price_low" ->
-                        domainList.sortedBy { it.price }
-
-                    "price_high" ->
-                        domainList.sortedByDescending { it.price }
-
-                    else ->
-                        domainList.sortedByDescending { it.createdAt }
+                when (sort) {
+                    "price_low" -> domainList.sortedBy { it.price }
+                    "price_high" -> domainList.sortedByDescending { it.price }
+                    else -> domainList.sortedByDescending { it.createdAt }
                 }
             }
     }
@@ -70,32 +54,20 @@ class ListingRepositoryImpl @Inject constructor(
     }
 
     override fun getMyListings(userId: String): Flow<List<Listing>> {
-        return listingDao.getMyListings(userId).map{list->
-            list.map{it.toDomain()}
+        return listingDao.getMyListings(userId).map { list ->
+            list.map { it.toDomain() }
         }
     }
 
     override suspend fun syncListings() {
         try {
+            Log.d("SYNC", "Starting sync")
             val remoteListings = firestore.getAllListings()
-            Log.d(
-                "SYNC",
-                "Firestore returned ${remoteListings.size} listings"
-            )
-            remoteListings.forEach {
-                Log.d(
-                    "SYNC_IDS",
-                    "DTO id = ${it.id}, title = ${it.title}"
-                )
-            }
-            if (remoteListings.isNotEmpty()) {
-                listingDao.insertListings(remoteListings.map { it.toEntity() })
-                Log.d("SYNC", "Inserted into Room")
-            } else {
-                Log.d("DEBUG_REPO", "Firestore returned 0 listings")
-            }
+            Log.d("SYNC", "Firestore returned ${remoteListings.size}")
+            listingDao.insertListings(remoteListings.map { it.toEntity() })
+            Log.d("SYNC", "Inserted into Room")
         } catch (e: Exception) {
-            Log.e("DEBUG_REPO", "Sync failed: ${e.message}", e)
+            Log.e("SYNC", "Error syncing listings: ${e.message}")
         }
     }
 
@@ -148,12 +120,13 @@ class ListingRepositoryImpl @Inject constructor(
         return listingDao.getListingById(id)
             .map { it?.toDomain() }
     }
+
     override suspend fun markAsSold(listingId: String) {
         firestore.markListingAsSold(listingId)
 
         val entity = listingDao.getListingById(listingId).firstOrNull()
         entity?.let {
-            listingDao.updateListing(it.copy(isSold = true,isActive = false))
+            listingDao.updateListing(it.copy(isSold = true, isActive = false))
         }
     }
 

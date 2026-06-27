@@ -16,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val auth: FirebaseAuth,
-    private val userRepository: UserRepository) : ViewModel() {
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _state = MutableStateFlow<AuthState>(AuthState.Idle)
     val state: StateFlow<AuthState> = _state
@@ -34,30 +35,20 @@ class AuthViewModel @Inject constructor(
 
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { result ->
-
                 val user = result.user
-
                 val profile = UserProfile(
                     userId = user?.uid ?: "",
                     name = name,
                     email = email,
                     phoneNumber = phoneNumber
                 )
-
                 viewModelScope.launch {
-
                     try {
-
                         userRepository.createProfile(profile)
-
                         _state.value = AuthState.Success
-
                     } catch (e: Exception) {
-
                         _state.value =
-                            AuthState.Error(
-                                e.message ?: "Profile creation failed"
-                            )
+                            AuthState.Error(e.message ?: "Profile creation failed")
                     }
                 }
             }

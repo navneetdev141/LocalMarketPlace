@@ -21,7 +21,11 @@ class ProfileViewModel @Inject constructor(private val userRepository: UserRepos
 
     fun getProfile(userId:String){
         viewModelScope.launch {
-            _profile.value = userRepository.getProfile(userId)
+            try {
+                _profile.value = userRepository.getProfile(userId)
+            } catch (e: Exception) {
+                android.util.Log.e("PROFILE_VM", "Error fetching profile: ${e.message}")
+            }
         }
     }
 }

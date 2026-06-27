@@ -130,11 +130,12 @@ fun LoginScreen(authViewModel: AuthViewModel, navController: NavController) {
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (state is AuthState.Loading) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
-                } else {
-                    Text("Login")
-                }
+                Text(
+                    if (state is AuthState.Loading)
+                        "Logging In..."
+                    else
+                        "Log In"
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -146,10 +147,7 @@ fun LoginScreen(authViewModel: AuthViewModel, navController: NavController) {
             }) {
                 Text(text = "Don't have an account? Sign Up")
             }
-
-
         }
-
         if (state is AuthState.Loading) {
             Box(
                 modifier = Modifier

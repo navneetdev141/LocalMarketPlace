@@ -68,7 +68,11 @@ class FirestoreService @Inject constructor(
 
     fun listenToNewListings(onNewListing: (ListingDto) -> Unit) {
 
-        firestore.collection("listings").addSnapshotListener { snapshot, _ ->
+        firestore.collection("listings").addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                android.util.Log.e("FIRESTORE", "Listen failed: $error")
+                return@addSnapshotListener
+            }
             snapshot?.documentChanges?.forEach { change ->
 
                 if (change.type == DocumentChange.Type.ADDED) {
