@@ -109,6 +109,7 @@ fun AppNavGraph(viewModel: ListingViewModel,profileViewModel: ProfileViewModel) 
                 hiltViewModel()
 
             ProfileScreen(
+                viewModel = viewModel,
                 profileViewModel = profileViewModel,
                 onBack = {
                     navController.popBackStack()

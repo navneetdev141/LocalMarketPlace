@@ -208,8 +208,9 @@ fun AddListingScreen(
 
             Button(
                 onClick = {
+                    if (isSubmitting) return@Button
+                    isSubmitting = true
                     scope.launch {
-                        isSubmitting = true
                         try {
                             val imageUrls = if(selectedImages.isNotEmpty()){
                                 viewModel.uploadImages(selectedImages, context)
@@ -262,7 +263,6 @@ fun AddListingScreen(
                 )
             }
         }
-
         if (isSubmitting) {
             Box(
                 modifier = Modifier

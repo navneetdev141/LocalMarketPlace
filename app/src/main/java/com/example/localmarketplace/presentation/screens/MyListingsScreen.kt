@@ -46,7 +46,7 @@ fun MyListingsScreen(
                         )
                         if (myListings.isNotEmpty()) {
                             Text(
-                                "${myListings.size} active listing${if (myListings.size > 1) "s" else ""}",
+                                "${myListings.size}  listing${if (myListings.size > 1) "s" else ""}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -133,6 +133,8 @@ fun MyListingsScreen(
                         onDelete = { viewModel.deleteListing(listing) },
                         onClick = { onListingClick(listing.id) },
                         onEdit = { onEditListing(listing.id) },
+                        onMarkAsSold = { viewModel.markAsSold(listing.id) },
+                        onMarkAsActive = { viewModel.markAsActive(listing.id) },
                         modifier = Modifier.animateItem()
                     )
                 }

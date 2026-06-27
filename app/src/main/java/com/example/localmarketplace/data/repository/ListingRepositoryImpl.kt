@@ -12,6 +12,7 @@ import com.example.localmarketplace.domain.model.Listing
 import com.example.localmarketplace.domain.ListingRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
@@ -146,5 +147,24 @@ class ListingRepositoryImpl @Inject constructor(
 
         return listingDao.getListingById(id)
             .map { it?.toDomain() }
+    }
+    override suspend fun markAsSold(listingId: String) {
+        firestore.markListingAsSold(listingId)
+
+        val entity = listingDao.getListingById(listingId).firstOrNull()
+        entity?.let {
+            listingDao.updateListing(it.copy(isSold = true,isActive = false))
+        }
+    }
+
+    override suspend fun markAsActive(listingId: String) {
+        firestore.markListingAsActive(listingId)
+
+        val entity = listingDao.getListingById(listingId).firstOrNull()
+        entity?.let {
+            listingDao.updateListing(
+                it.copy(isSold = false, isActive = true)
+            )
+        }
     }
 }

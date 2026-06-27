@@ -14,6 +14,9 @@ interface ListingRepository {
 
     suspend fun updateListing(listing: Listing)
 
+    suspend fun markAsSold(listingId: String)
+    suspend fun markAsActive(listingId: String)
+
     fun getListingById(
         id: String
     ): Flow<Listing?>

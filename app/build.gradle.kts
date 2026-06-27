@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.material3)
     implementation(libs.firebase.storage)
+    implementation(libs.room.ktx)
     ksp(libs.androidx.room.compiler)
 
     // Hilt

@@ -1,18 +1,27 @@
 package com.example.localmarketplace.presentation.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,6 +33,8 @@ import com.example.localmarketplace.R
 import com.example.localmarketplace.domain.model.Listing
 import com.google.firebase.auth.FirebaseAuth
 
+private val ActiveGreen = Color(0xFF166534)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyListingItem(
@@ -31,6 +42,8 @@ fun MyListingItem(
     onDelete: () -> Unit,
     onClick: () -> Unit,
     onEdit: () -> Unit,
+    onMarkAsSold: () -> Unit,
+    onMarkAsActive: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
@@ -80,8 +93,11 @@ fun MyListingItem(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp, pressedElevation = 4.dp),
-        border = androidx.compose.foundation.BorderStroke(
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 4.dp
+        ),
+        border = BorderStroke(
             1.dp,
             MaterialTheme.colorScheme.outlineVariant
         )
@@ -110,26 +126,82 @@ fun MyListingItem(
                         .align(Alignment.BottomCenter)
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.55f)
+                                )
                             )
                         )
                 )
-                Surface(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.TopStart),
-                    shape = RoundedCornerShape(50.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
-                    shadowElevation = 2.dp
-                ) {
-                    Text(
-                        text = listing.category,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                 if (listing.isSold) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                            .background(Color.Black.copy(alpha = 0.40f))
                     )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .rotate(-25f)                    // tilted like a real stamp
+                            .border(
+                                width = 3.dp,
+                                color = Color(0xFFDC2626),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "SOLD",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 6.sp,
+                                color = Color(0xFFDC2626)
+                            )
+                        )
+                    }
+                }
+
+                if (!listing.isSold) {
+                    Surface(
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .align(Alignment.TopStart),
+                        shape = RoundedCornerShape(50.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
+                        shadowElevation = 2.dp
+                    ) {
+                        Text(
+                            text = listing.category,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        )
+                    }
+                }
+                if (!listing.isSold) {
+                    Surface(
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .align(Alignment.TopEnd),
+                        shape = RoundedCornerShape(50.dp),
+                        color = if (listing.isActive)
+                            Color(0xFF14532D).copy(alpha = 0.85f)
+                        else
+                            Color.Black.copy(alpha = 0.6f),
+                        shadowElevation = 2.dp
+                    ) {
+                        Text(
+                            text = "Active",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        )
+                    }
                 }
             }
 
@@ -187,6 +259,62 @@ fun MyListingItem(
                         thickness = 1.dp
                     )
                     Spacer(modifier = Modifier.height(10.dp))
+
+                    if (!listing.isSold) {
+                        OutlinedButton(
+                            onClick = onMarkAsSold,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = ActiveGreen
+                            ),
+                            border = BorderStroke(
+                                1.dp, ActiveGreen.copy(alpha = 0.5f)
+                            ),
+                            contentPadding = PaddingValues(vertical = 10.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle, null,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(Modifier.width(5.dp))
+                            Text(
+                                "Mark as Sold",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        }
+                    } else {
+                        OutlinedButton(
+                            onClick = onMarkAsActive,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                            ),
+                            contentPadding = PaddingValues(vertical = 10.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Refresh, null,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(Modifier.width(5.dp))
+                            Text(
+                                "Mark as Active",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -198,8 +326,9 @@ fun MyListingItem(
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = MaterialTheme.colorScheme.error
                             ),
-                            border = androidx.compose.foundation.BorderStroke(
-                                1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
                             ),
                             contentPadding = PaddingValues(vertical = 10.dp)
                         ) {

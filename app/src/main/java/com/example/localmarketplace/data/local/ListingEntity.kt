@@ -15,5 +15,7 @@ data class ListingEntity(
     val phoneNumber: String,
     val imageUrls: List<String>,
     val userId: String,
-    val createdAt: Long
+    val createdAt: Long,
+    val isActive: Boolean = true,
+    val isSold: Boolean = false
 )

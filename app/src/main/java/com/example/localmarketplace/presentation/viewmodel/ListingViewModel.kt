@@ -16,12 +16,16 @@ import com.example.localmarketplace.presentation.listing.ListingUiState
 import com.example.localmarketplace.utils.NotificationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -89,14 +93,15 @@ class ListingViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    suspend fun uploadImages(uris: List<Uri>, context: Context): List<String> {
-        val urls = mutableListOf<String>()
-
-        for (uri in uris) {
-            val url = cloudinaryService.uploadImage(uri, context)
-            urls.add(url)
-        }
-        return urls
+    suspend fun uploadImages(
+        uris: List<Uri>,
+        context: Context
+    ): List<String> = coroutineScope {
+        uris.map { uri ->
+            async {
+                cloudinaryService.uploadImage(uri, context)
+            }
+        }.awaitAll()
     }
 
     init {
@@ -185,6 +190,30 @@ class ListingViewModel @Inject constructor(
                         e.message ?: "Update failed"
                     )
             }
+        }
+    }
+
+    fun markAsSold(listingId: String) {
+        viewModelScope.launch {
+            try {
+                repository.markAsSold(listingId)
+            } catch (e: Exception) { }
+        }
+    }
+
+    fun markAsActive(listingId: String) {
+        viewModelScope.launch {
+            try {
+                repository.markAsActive(listingId)
+            } catch (e: Exception) { }
+        }
+    }
+    fun getUserListingStats(userId: String): Flow<Triple<Int, Int, Int>> {
+        return repository.getMyListings(userId).    map { listings ->
+            val posted = listings.size
+            val active = listings.count { it.isActive && !it.isSold }
+            val sold   = listings.count { it.isSold }
+            Triple(posted, active, sold)
         }
     }
 }

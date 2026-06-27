@@ -78,4 +78,22 @@ class FirestoreService @Inject constructor(
             }
         }
     }
+
+    suspend fun markListingAsSold(listingId: String) {
+        firestore.collection("listings")
+            .document(listingId)
+            .update(mapOf(
+                "isSold"   to true,
+                "isActive" to false
+            )).await()
+    }
+
+    suspend fun markListingAsActive(listingId: String) {
+        firestore.collection("listings")
+            .document(listingId)
+            .update(mapOf(
+                "isSold"   to false,
+                "isActive" to true
+            )).await()
+    }
 }

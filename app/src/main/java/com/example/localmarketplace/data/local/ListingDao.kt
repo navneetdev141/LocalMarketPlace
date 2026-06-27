@@ -5,11 +5,15 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.localmarketplace.data.local.ListingEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ListingDao {
+
+    @Update
+    suspend fun updateListing(listing: ListingEntity)
 
     @Query(
         "SELECT * FROM listings " +

@@ -2,6 +2,7 @@ package com.example.localmarketplace.data.remote
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -10,6 +11,7 @@ import javax.inject.Inject
 class CloudinaryService @Inject constructor(private val cloudinaryApi: CloudinaryApi) {
 
     suspend fun uploadImage(uri: Uri, context: Context): String {
+        Log.d("UPLOAD", "Started")
 
         val presetPart = "eicurqzl".toRequestBody("text/plain".toMediaTypeOrNull())
 
@@ -36,5 +38,6 @@ class CloudinaryService @Inject constructor(private val cloudinaryApi: Cloudinar
             android.util.Log.e("CLOUDINARY", "Upload failed: ${e.message}", e)
             throw e
         }
+        Log.d("UPLOAD", "Finished")
     }
 }

@@ -15,7 +15,9 @@ fun ListingEntity.toDomain(): Listing {
         imageUrls = imageUrls,
         userId = userId,
         phoneNumber = phoneNumber,
-        createdAt = createdAt
+        createdAt = createdAt,
+        isActive =isActive,
+        isSold = isSold
     )
 }
 
@@ -29,7 +31,9 @@ fun Listing.toEntity(): ListingEntity {
         imageUrls = imageUrls,
         userId = userId,
         phoneNumber = phoneNumber,
-        createdAt = createdAt
+        createdAt = createdAt,
+        isActive =isActive,
+        isSold = isSold
     )
 }
 fun ListingDto.toEntity(): ListingEntity {
@@ -42,7 +46,9 @@ fun ListingDto.toEntity(): ListingEntity {
         imageUrls = imageUrls,
         userId = userId,
         phoneNumber = phoneNumber,
-        createdAt = createdAt
+        createdAt = createdAt,
+        isActive =isActive,
+        isSold = isSold
     )
 }
 
@@ -56,6 +62,8 @@ fun Listing.toDto(): ListingDto {
         imageUrls = imageUrls,
         userId = userId,
         phoneNumber = phoneNumber,
-        createdAt = createdAt
+        createdAt = createdAt,
+        isActive =isActive,
+        isSold = isSold
     )
 }

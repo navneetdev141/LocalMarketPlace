@@ -9,5 +9,7 @@ data class ListingDto(
     val category: String = "",
     val imageUrls: List<String> = emptyList(),
     val userId: String = "",
-    val createdAt: Long = 0L
+    val createdAt: Long = 0L,
+    val isActive: Boolean = true,
+    val isSold: Boolean = false
 )
