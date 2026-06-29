@@ -1,67 +1,47 @@
 package com.example.localmarketplace.presentation.auth
 
-
-import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.android.gms.auth.api.Auth
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-
+import com.example.localmarketplace.utils.toUserMessage
 
 @Composable
-fun LoginScreen(authViewModel: AuthViewModel, navController: NavController) {
+fun LoginScreen(
+    authViewModel: AuthViewModel,
+    navController: NavController
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     val state by authViewModel.state.collectAsState()
-    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state) {
         when (state) {
             is AuthState.Success -> {
-                Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                 navController.navigate("home") {
                     popUpTo("login") { inclusive = true }
                 }
             }
-
             is AuthState.Error -> {
-                Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT)
-                    .show()
+                snackbarHostState.showSnackbar(
+                    message = (state as AuthState.Error).error.toUserMessage(),
+                    duration = SnackbarDuration.Short
+                )
+                authViewModel.clearError()
             }
-
             else -> Unit
         }
     }
@@ -73,36 +53,31 @@ fun LoginScreen(authViewModel: AuthViewModel, navController: NavController) {
         contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 "Login",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    emailError = if (it.isBlank()) "Email is required" else null
+                },
                 label = { Text("Email") },
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
+                isError = emailError != null,
+                supportingText = { emailError?.let { Text(it) } },
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -111,41 +86,67 @@ fun LoginScreen(authViewModel: AuthViewModel, navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    passwordError = if (it.isBlank()) "Password is required" else null
+                },
+                label = { Text("Password") },
+                singleLine = true,
+                isError = passwordError != null,
+                supportingText = { passwordError?.let { Text(it) } },
+                visualTransformation = PasswordVisualTransformation(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    if (email.isBlank() || password.isBlank()) {
-                        Toast.makeText(
-                            context,
-                            "Please enter all fields",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
+                    // Validation
+                    emailError = if (email.isBlank()) "Email is required" else null
+                    passwordError = if (password.isBlank()) "Password is required" else null
+
+                    if (emailError == null && passwordError == null) {
                         authViewModel.login(email, password)
                     }
-
-                }, colors = ButtonDefaults.buttonColors(
+                },
+                enabled = state !is AuthState.Loading,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
             ) {
                 Text(
-                    if (state is AuthState.Loading)
-                        "Logging In..."
-                    else
-                        "Log In"
+                    if (state is AuthState.Loading) "Logging In..." else "Log In",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.SemiBold
+                    )
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(Modifier.height(10.dp))
 
-            TextButton(onClick = {
-                navController.navigate("signup") {
-                    popUpTo("login") { inclusive = true }
+            TextButton(
+                onClick = {
+                    navController.navigate("signup") {
+                        popUpTo("login") { inclusive = true }
+                    }
                 }
-            }) {
-                Text(text = "Don't have an account? Sign Up")
+            ) {
+                Text("Don't have an account? Sign Up")
             }
         }
         if (state is AuthState.Loading) {
@@ -154,10 +155,15 @@ fun LoginScreen(authViewModel: AuthViewModel, navController: NavController) {
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
-            )
-            {
-                CircularProgressIndicator()
+            ) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }

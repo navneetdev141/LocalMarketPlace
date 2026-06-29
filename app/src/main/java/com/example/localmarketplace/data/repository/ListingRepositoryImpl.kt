@@ -99,13 +99,8 @@ class ListingRepositoryImpl @Inject constructor(
             userId = userId,
             createdAt = System.currentTimeMillis()
         )
-        //adding the listing locally
         listingDao.insertListing(newListing.toEntity())
-        Log.d("DB_INSERT", "Inserted locally")
-
-        //syncing to firestore
         firestore.addListing(newListing.toDto())
-        Log.d("DB_INSERT", "Synced to Firestore")
     }
 
     override suspend fun deleteListing(listing: Listing) {

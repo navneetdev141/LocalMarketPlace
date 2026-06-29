@@ -3,6 +3,7 @@ package com.example.localmarketplace.data.remote
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.example.localmarketplace.utils.AppErrorMapper
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -32,12 +33,9 @@ class CloudinaryService @Inject constructor(private val cloudinaryApi: Cloudinar
                 file = body,
                 uploadPreset = presetPart
             )
-            android.util.Log.d("CLOUDINARY", "Upload success: ${response.secure_url}")
             return response.secure_url
         } catch (e: Exception) {
-            android.util.Log.e("CLOUDINARY", "Upload failed: ${e.message}", e)
             throw e
         }
-        Log.d("UPLOAD", "Finished")
     }
 }

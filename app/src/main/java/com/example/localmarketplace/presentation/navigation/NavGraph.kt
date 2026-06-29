@@ -76,7 +76,8 @@ fun AppNavGraph(viewModel: ListingViewModel,profileViewModel: ProfileViewModel) 
                 onListingAdded = {
                     navController.popBackStack()
                 },
-                listingId = listingId
+                listingId = listingId,
+                onBack = {navController.popBackStack()}
             )
         }
         composable("detail/{listingId}") { backStackEntry ->

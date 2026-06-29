@@ -1,5 +1,6 @@
 package com.example.localmarketplace.data.remote
 
+import android.util.Log
 import com.example.localmarketplace.domain.model.Listing
 import com.example.localmarketplace.domain.model.UserProfile
 import com.google.firebase.firestore.DocumentChange
@@ -12,14 +13,19 @@ class FirestoreService @Inject constructor(
 ) {
 
     suspend fun getAllListings(): List<ListingDto> {
-        val snapshot = firestore.collection("listings").get().await()
+        try {
+            val snapshot = firestore.collection("listings").get().await()
 
-        return snapshot.documents.mapNotNull { doc ->
-            doc.toObject(ListingDto::class.java)
+            return snapshot.documents.mapNotNull { doc ->
+                doc.toObject(ListingDto::class.java)
+            }
+        } catch (e: Exception) {
+            Log.e("Firestore", "Failed to fetch listings", e)
+            throw e
         }
     }
 
-    suspend fun updateListing(listingDto: ListingDto){
+    suspend fun updateListing(listingDto: ListingDto) {
 
         firestore.collection("listings")
             .document(listingDto.id)
@@ -41,25 +47,31 @@ class FirestoreService @Inject constructor(
             .delete()
             .await()
     }
-    suspend fun createUserProfile(profile: UserProfileDto){
+
+    suspend fun createUserProfile(profile: UserProfileDto) {
         firestore.collection("users")
             .document(profile.userId)
             .set(profile)
             .await()
     }
 
-    suspend fun getUserProfile(userId: String): UserProfileDto{
-        val snapshot =
-            firestore.collection("users")
-                .document(userId)
-                .get()
-                .await()
+    suspend fun getUserProfile(userId: String): UserProfileDto {
+        try {
+            val snapshot =
+                firestore.collection("users")
+                    .document(userId)
+                    .get()
+                    .await()
 
-        return snapshot.toObject(UserProfileDto::class.java)
-            ?: UserProfileDto()
+            return snapshot.toObject(UserProfileDto::class.java)
+                ?: UserProfileDto()
+        } catch (e: Exception) {
+            Log.e("Profile", "Failed to get profile", e)
+            throw e
+        }
     }
 
-    suspend fun updateUserProfile(profile: UserProfileDto){
+    suspend fun updateUserProfile(profile: UserProfileDto) {
         firestore.collection("users")
             .document(profile.userId)
             .set(profile)
@@ -86,18 +98,22 @@ class FirestoreService @Inject constructor(
     suspend fun markListingAsSold(listingId: String) {
         firestore.collection("listings")
             .document(listingId)
-            .update(mapOf(
-                "isSold"   to true,
-                "isActive" to false
-            )).await()
+            .update(
+                mapOf(
+                    "isSold" to true,
+                    "isActive" to false
+                )
+            ).await()
     }
 
     suspend fun markListingAsActive(listingId: String) {
         firestore.collection("listings")
             .document(listingId)
-            .update(mapOf(
-                "isSold"   to false,
-                "isActive" to true
-            )).await()
+            .update(
+                mapOf(
+                    "isSold" to false,
+                    "isActive" to true
+                )
+            ).await()
     }
 }

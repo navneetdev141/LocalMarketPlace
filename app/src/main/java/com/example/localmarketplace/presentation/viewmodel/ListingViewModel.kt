@@ -12,7 +12,8 @@ import com.example.localmarketplace.data.remote.FirestoreService
 import com.example.localmarketplace.domain.model.Listing
 import com.example.localmarketplace.domain.ListingRepository
 import com.example.localmarketplace.domain.WishlistRepository
-import com.example.localmarketplace.presentation.listing.ListingUiState
+import com.example.localmarketplace.presentation.components.ListingUiState
+import com.example.localmarketplace.utils.AppErrorMapper
 import com.example.localmarketplace.utils.NotificationHelper
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -162,7 +163,7 @@ class ListingViewModel @Inject constructor(
                 repository.addListing(listing)
                 _uiState.value = ListingUiState.Success(listings.value)
             } catch (e: Exception) {
-                _uiState.value = ListingUiState.Error(e.message ?: "Upload Failed")
+                _uiState.value = ListingUiState.Error(AppErrorMapper.map(e))
             }
 
         }
@@ -214,7 +215,7 @@ class ListingViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value =
                     ListingUiState.Error(
-                        e.message ?: "Update failed"
+                        AppErrorMapper.map(e)
                     )
             }
         }
@@ -223,14 +224,22 @@ class ListingViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.markAsSold(listingId)
-            } catch (e: Exception) { }
+            } catch (e: Exception) {
+                _uiState.value = ListingUiState.Error(
+                    AppErrorMapper.map(e)
+                )
+            }
         }
     }
     fun markAsActive(listingId: String) {
         viewModelScope.launch {
             try {
                 repository.markAsActive(listingId)
-            } catch (e: Exception) { }
+            }catch (e: Exception) {
+                _uiState.value = ListingUiState.Error(
+                    AppErrorMapper.map(e)
+                )
+            }
         }
     }
     fun getUserListingStats(userId: String): Flow<Triple<Int, Int, Int>> {
